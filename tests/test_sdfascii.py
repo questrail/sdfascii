@@ -247,3 +247,27 @@ class TestReadingSDFFormat(unittest.TestCase):
 
     def test_sdf_data_hdr_window_applied(self):
         self.assertTrue(self.sdf_hdr['data_hdr'][0]['window_applied'])
+
+    def test_sdf_vector_hdr_record_size(self):
+        self.assertEqual(self.sdf_hdr['vector_hdr'][0]['record_size'],18)
+
+    def test_sdf_vector_hdr_unique_record_offset(self):
+        self.assertTrue('offset_unique_record' in self.sdf_hdr['vector_hdr'][0])
+        self.assertEqual(self.sdf_hdr['vector_hdr'][0]['offset_unique_record'], -1)
+
+    def test_sdf_vector_hdr_channel_record(self):
+        self.assertEqual(self.sdf_hdr['vector_hdr'][0]['channel_record'][0], 0)
+        self.assertEqual(self.sdf_hdr['vector_hdr'][0]['channel_record'][1], -1)
+
+    def test_sdf_vector_hdr_channel_power(self):
+        self.assertEqual(self.sdf_hdr['vector_hdr'][0]['channel_power_48x'][0], 96)
+        self.assertEqual(self.sdf_hdr['vector_hdr'][0]['channel_power_48x'][1], 0)
+
+    def test_sdf_channel_hdr_record_size(self):
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['record_size'],192)
+
+
+
+
+
+

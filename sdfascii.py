@@ -225,6 +225,28 @@ def _decode_sdf_data_hdr(record_size, sdf_revision, binary_data):
 
     return data_hdr
 
+def _decode_sdf_vector_hdr(record_size, sdf_revision, binary_data):
+    '''
+    Decode the vector header binary data
+    '''
+    vector_hdr = {}
+    vector_hdr['record_size'] = record_size
+    (vector_hdr['offset_unique_record'],) = \
+            struct.unpack('>l', binary_data[6:10])
+    vector_hdr['channel_record'] = struct.unpack('>2h', binary_data[10:14])
+    vector_hdr['channel_power_48x'] = struct.unpack('>2h', binary_data[14:18])
+
+    return vector_hdr
+
+def _decode_sdf_channel_hdr(record_size, sdf_revision, binary_data):
+    '''
+    Decode the channel header binary data
+    '''
+    channel_hdr = {}
+    channel_hdr['record_size'] = record_size
+
+    return channel_hdr
+
 def read_sdf_file(sdf_filename):
     '''
     Read the binary SDF file.
@@ -236,11 +258,9 @@ def read_sdf_file(sdf_filename):
 
     '''
     sdf_hdr = {}
-    # Change sdf_data to a numpy array
+    # FIXME: Change sdf_data to a numpy array
     sdf_data = {}
     sdf_hdr['valid_file_identifier'] = False
-    sdf_hdr['data_hdr'] = []     # There are 0 or more data header records
-    sdf_hdr['vector_hdr'] = []   # There are 0 or more vector header records
     sdf_hdr['channel_hdr'] = []  # There are 0 or more channel header records
 
     with open(sdf_filename, 'rb') as sdf_file:
@@ -302,6 +322,52 @@ def read_sdf_file(sdf_filename):
                         sdf_file.read(data_hdr_record_size)))
             else:
                 sys.exit('This should have been a data header record.')
+
+        # Decode the vector header records
+        sdf_hdr['vector_hdr'] = []
+        # Initialize record size to 0 until we know the answer
+        vector_hdr_record_size = 0
+        for vector_hdr_record_index in range(sdf_hdr['file_hdr']['num_vector_hdr_records']):
+            # Move to the start of the vector header record
+            sdf_file.seek(sdf_hdr['file_hdr']['offset_vector_record'] +
+                    vector_hdr_record_index * vector_hdr_record_size)
+            # Read the record type and size
+            vector_hdr_record_type, vector_hdr_record_size = struct.unpack(
+                    record_type_size_format,
+                    sdf_file.read(struct.calcsize(record_type_size_format)))
+            if vector_hdr_record_type == 13:
+                # This is a vector header record
+                # Backup and read all of the vector header record including
+                # the record type and record size
+                sdf_file.seek(sdf_file.tell() - struct.calcsize(record_type_size_format))
+                sdf_hdr['vector_hdr'].append(_decode_sdf_vector_hdr(
+                    vector_hdr_record_size, sdf_hdr['file_hdr']['sdf_revision'],
+                    sdf_file.read(vector_hdr_record_size)))
+            else:
+                sys.exit('This should have been a vector header record.')
+
+        # Decode the channel header records
+        sdf_hdr['channel_hdr'] = []
+        # Initialize record size to 0 until we know the answer
+        channel_hdr_record_size = 0
+        for channel_hdr_record_index in range(sdf_hdr['file_hdr']['num_channel_hdr_records']):
+            # Move to the start of the channel header record
+            sdf_file.seek(sdf_hdr['file_hdr']['offset_channel_record'] +
+                    channel_hdr_record_index * channel_hdr_record_size)
+            # Read the record type and size
+            channel_hdr_record_type, channel_hdr_record_size = struct.unpack(
+                    record_type_size_format,
+                    sdf_file.read(struct.calcsize(record_type_size_format)))
+            if channel_hdr_record_type == 14:
+                # This is a channel header record
+                # Backup and read all of the channel header record including
+                # the record type and record size
+                sdf_file.seek(sdf_file.tell() - struct.calcsize(record_type_size_format))
+                sdf_hdr['channel_hdr'].append(_decode_sdf_channel_hdr(
+                    channel_hdr_record_size, sdf_hdr['file_hdr']['sdf_revision'],
+                    sdf_file.read(channel_hdr_record_size)))
+            else:
+                sys.exit('This should have been a channel header record.')
 
 
         #dt = np.dtype([('file_id', '|a2')])
