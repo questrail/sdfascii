@@ -22,8 +22,5 @@ class TestReadingSDFFormat(unittest.TestCase):
         pass
 
     def test_reading_sdf_file_identifier(self):
-        known_sdf_file_identifier = 'B\x00'
-        self.assertEqual(self.sdf_hdr['file_identifier'],
-                known_sdf_file_identifier,
-                'Received {file_id} file identifier; expected "B\x00"'.format(
-                    file_id = self.sdf_hdr['file_identifier']))
+        self.assertTrue(self.sdf_hdr['valid_file_identifier'],
+                'Invalid SDF file identifier')
