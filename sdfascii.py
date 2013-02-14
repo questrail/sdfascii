@@ -27,6 +27,13 @@ import numpy as np
 def _strip_nonprintable(input_string):
     return input_string.split('\x00',1)[0]
 
+def _convert_sdf_unit_to_dictionary(sdf_unit):
+    keys = ('label', 'factor', 'mass', 'length', 'time', 'current',
+            'temperature', 'luminal_intensity', 'mole', 'plane_angle')
+    sdf_unit_dictionary = dict(zip(keys, sdf_unit))
+    sdf_unit_dictionary['label'] = _strip_nonprintable(sdf_unit_dictionary['label'])
+    return sdf_unit_dictionary
+
 def _read_hdr(input_hdr_filename):
     pass
 
@@ -184,6 +191,14 @@ def _decode_sdf_data_hdr(record_size, sdf_revision, binary_data):
     data_hdr['y_is_power_data'] = bool(data_hdr['y_is_complex'])
     data_hdr['y_is_valid'], = struct.unpack('>h', binary_data[58:60])
     data_hdr['y_is_valid'] = bool(data_hdr['y_is_complex'])
+    data_hdr['first_vector_record_num'], = struct.unpack('>l', binary_data[60:64])
+    data_hdr['total_rows'], data_hdr['total_cols'] = struct.unpack('>2h', binary_data[64:68])
+    xunit = struct.unpack('>10sf8b', binary_data[68:90])
+    data_hdr['xunit'] = _convert_sdf_unit_to_dictionary(xunit)
+    data_hdr['y_unit_valid'], = struct.unpack('>h', binary_data[90:92])
+    data_hdr['y_unit_valid'] = bool(data_hdr['y_unit_valid'])
+    yunit = struct.unpack('>10sf8b', binary_data[92:114])
+    data_hdr['yunit'] = _convert_sdf_unit_to_dictionary(yunit)
 
     if sdf_revision == 1:
         # Decode the revision 1 stuff
@@ -194,6 +209,12 @@ def _decode_sdf_data_hdr(record_size, sdf_revision, binary_data):
         # Decode the revision 2 stuff
         (data_hdr['num_points'], data_hdr['last_valid_index']) = \
                 struct.unpack('>2h', binary_data[30:34])
+        (data_hdr['abscissa_first_x'], data_hdr['abscissa_delta_x']) = \
+                struct.unpack('>2d', binary_data[114:130])
+        data_hdr['scan_data'], = struct.unpack('>h', binary_data[130:132])
+        data_hdr['scan_data'] = bool(data_hdr['scan_data'])
+        data_hdr['window_applied'], = struct.unpack('>h', binary_data[132:134])
+        data_hdr['window_applied'] = bool(data_hdr['window_applied'])
     elif sdf_revision == 3:
         # Decode the revision 3 related stuff
         # FIXME: Add rev 3 stuff later

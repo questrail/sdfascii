@@ -170,12 +170,6 @@ class TestReadingSDFFormat(unittest.TestCase):
     def test_sdf_data_hdr_last_valid_index(self):
         self.assertEqual(self.sdf_hdr['data_hdr'][0]['last_valid_index'],2048)
 
-    #def test_sdf_data_hdr_abscissa_first_x(self):
-        #self.assertEqual(self.sdf_hdr['data_hdr'][0]['abscissa_first_x'],0.0)
-
-    #def test_sdf_data_hdr_abscissa_delta_x(self):
-        #self.assertEqual(self.sdf_hdr['data_hdr'][0]['abscissa_delta_x'],8.0)
-
     def test_sdf_data_hdr_x_resolution_type(self):
         self.assertTrue('x_resolution_type' in self.sdf_hdr['data_hdr'][0])
         self.assertEqual(self.sdf_hdr['data_hdr'][0]['x_resolution_type'],'Linear')
@@ -206,3 +200,50 @@ class TestReadingSDFFormat(unittest.TestCase):
     def test_sdf_data_hdr_y_is_valid(self):
         self.assertFalse(self.sdf_hdr['data_hdr'][0]['y_is_valid'])
 
+    def test_sdf_data_hdr_first_vector_record_num(self):
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['first_vector_record_num'], 0)
+
+    def test_sdf_data_hdr_total_rows(self):
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['total_rows'], 1)
+
+    def test_sdf_data_hdr_total_cols(self):
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['total_cols'], 1)
+
+    def test_sdf_data_hdr_xunit(self):
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['xunit']['label'], 'Hz')
+        self.assertAlmostEqual(self.sdf_hdr['data_hdr'][0]['xunit']['factor'], 6.28318977)
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['xunit']['mass'], 0)
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['xunit']['length'], 0)
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['xunit']['time'], -2)
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['xunit']['current'], 0)
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['xunit']['temperature'], 0)
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['xunit']['luminal_intensity'], 0)
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['xunit']['mole'], 0)
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['xunit']['plane_angle'], 2)
+
+    def test_sdf_data_hdr_y_unit_valid(self):
+        self.assertFalse(self.sdf_hdr['data_hdr'][0]['y_unit_valid'])
+
+    def test_sdf_data_hdr_yunit(self):
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['yunit']['label'], '')
+        self.assertAlmostEqual(self.sdf_hdr['data_hdr'][0]['yunit']['factor'], 1)
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['yunit']['mass'], 0)
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['yunit']['length'], 0)
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['yunit']['time'], 0)
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['yunit']['current'], 0)
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['yunit']['temperature'], 0)
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['yunit']['luminal_intensity'], 0)
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['yunit']['mole'], 0)
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['yunit']['plane_angle'], 0)
+
+    def test_sdf_data_hdr_abscissa_first_x(self):
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['abscissa_first_x'],0.0)
+
+    def test_sdf_data_hdr_abscissa_delta_x(self):
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['abscissa_delta_x'],8.0)
+
+    def test_sdf_data_hdr_scan_data(self):
+        self.assertFalse(self.sdf_hdr['data_hdr'][0]['scan_data'])
+
+    def test_sdf_data_hdr_window_applied(self):
+        self.assertTrue(self.sdf_hdr['data_hdr'][0]['window_applied'])
