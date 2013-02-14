@@ -148,3 +148,61 @@ class TestReadingSDFFormat(unittest.TestCase):
     def test_sdf_meas_hdr_sweep_time(self):
         self.assertEqual(self.sdf_hdr['meas_hdr']['sweep_time'], 0.0)
 
+    def test_sdf_data_hdr_record_size(self):
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['record_size'],134)
+
+    def test_sdf_data_hdr_offset_unique_record(self):
+        self.assertTrue('offset_unique_record' in self.sdf_hdr['data_hdr'][0])
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['offset_unique_record'],-1)
+
+    def test_sdf_data_hdr_data_title(self):
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['data_title'],'Pwr Spec')
+
+    def test_sdf_data_hdr_domain(self):
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['domain'],'Frequency domain')
+
+    def test_sdf_data_hdr_data_type(self):
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['data_type'],'Auto-power spectrum')
+
+    def test_sdf_data_hdr_num_points(self):
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['num_points'],2049)
+
+    def test_sdf_data_hdr_last_valid_index(self):
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['last_valid_index'],2048)
+
+    #def test_sdf_data_hdr_abscissa_first_x(self):
+        #self.assertEqual(self.sdf_hdr['data_hdr'][0]['abscissa_first_x'],0.0)
+
+    #def test_sdf_data_hdr_abscissa_delta_x(self):
+        #self.assertEqual(self.sdf_hdr['data_hdr'][0]['abscissa_delta_x'],8.0)
+
+    def test_sdf_data_hdr_x_resolution_type(self):
+        self.assertTrue('x_resolution_type' in self.sdf_hdr['data_hdr'][0])
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['x_resolution_type'],'Linear')
+
+    def test_sdf_data_hdr_x_data_type(self):
+        self.assertTrue('x_data_type' in self.sdf_hdr['data_hdr'][0])
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['x_data_type'],'float')
+
+    def test_sdf_data_hdr_x_per_point(self):
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['x_per_point'], 0)
+
+    def test_sdf_data_hdr_y_data_type(self):
+        self.assertTrue('y_data_type' in self.sdf_hdr['data_hdr'][0])
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['y_data_type'], 'float')
+
+    def test_sdf_data_hdr_y_per_point(self):
+        self.assertEqual(self.sdf_hdr['data_hdr'][0]['y_per_point'], 1)
+
+    def test_sdf_data_hdr_y_is_complex(self):
+        self.assertFalse(self.sdf_hdr['data_hdr'][0]['y_is_complex'])
+
+    def test_sdf_data_hdr_y_is_normalized(self):
+        self.assertFalse(self.sdf_hdr['data_hdr'][0]['y_is_normalized'])
+
+    def test_sdf_data_hdr_y_is_power_data(self):
+        self.assertFalse(self.sdf_hdr['data_hdr'][0]['y_is_power_data'])
+
+    def test_sdf_data_hdr_y_is_valid(self):
+        self.assertFalse(self.sdf_hdr['data_hdr'][0]['y_is_valid'])
+

@@ -141,10 +141,68 @@ def _decode_sdf_meas_hdr(record_size, sdf_revision, binary_data):
         # SDF revision not recognized
         sys.exit('Did not recognize SDF revision')
 
-
-
     return meas_hdr
 
+def _decode_sdf_data_hdr(record_size, sdf_revision, binary_data):
+    '''
+    Decode the data header binary data
+    '''
+    data_hdr = {}
+    data_hdr['record_size'] = record_size
+    (data_hdr['offset_unique_record'],) = \
+            struct.unpack('>1l', binary_data[6:10])
+    data_hdr['data_title'] = _strip_nonprintable(
+            struct.unpack('>16s', binary_data[10:26])[0])
+    coded_domain, = struct.unpack('>h', binary_data[26:28])
+    domain_decoder = {-99: 'Unknown', 0: 'Frequency domain',
+            1: 'Time domain', 2: 'Amplitude domain',
+            3: 'RPM', 4: 'Order', 5: 'Channel', 6: 'Octave'}
+    data_hdr['domain'] = domain_decoder[coded_domain]
+    coded_data_type, = struct.unpack('>h', binary_data[28:30])
+    # FIXME: Add more data_type codes
+    data_type_decoder = {-99: 'Unknown', 0: 'Time',
+            1: 'Linear spectrum', 2: 'Auto-power spectrum',}
+    data_hdr['data_type'] = data_type_decoder[coded_data_type]
+    coded_x_resolution_type, = struct.unpack('>h', binary_data[42:44])
+    x_resolution_type_decoder = {0: 'Linear', 1: 'Logarithmic',
+            2: 'Arbitrary, one per file', 3: 'Arbitrary, one per data type',
+            4: 'Arbitrary, one per trace'}
+    data_hdr['x_resolution_type'] = x_resolution_type_decoder[coded_x_resolution_type]
+    coded_x_data_type, = struct.unpack('>h', binary_data[44:46])
+    x_data_type_decoder = {1: 'short', 2: 'long', 3: 'float', 4: 'double'}
+    data_hdr['x_data_type'] = x_data_type_decoder[coded_x_data_type]
+    data_hdr['x_per_point'], = struct.unpack('>h', binary_data[46:48])
+    coded_y_data_type, = struct.unpack('>h', binary_data[48:50])
+    y_data_type_decoder = {1: 'short', 2: 'long', 3: 'float', 4: 'double'}
+    data_hdr['y_data_type'] = y_data_type_decoder[coded_y_data_type]
+    data_hdr['y_per_point'], = struct.unpack('>h', binary_data[50:52])
+    data_hdr['y_is_complex'], = struct.unpack('>h', binary_data[52:54])
+    data_hdr['y_is_complex'] = bool(data_hdr['y_is_complex'])
+    data_hdr['y_is_normalized'], = struct.unpack('>h', binary_data[54:56])
+    data_hdr['y_is_normalized'] = bool(data_hdr['y_is_complex'])
+    data_hdr['y_is_power_data'], = struct.unpack('>h', binary_data[56:58])
+    data_hdr['y_is_power_data'] = bool(data_hdr['y_is_complex'])
+    data_hdr['y_is_valid'], = struct.unpack('>h', binary_data[58:60])
+    data_hdr['y_is_valid'] = bool(data_hdr['y_is_complex'])
+
+    if sdf_revision == 1:
+        # Decode the revision 1 stuff
+        # FIXME: Add rev 1 stuff later
+        (data_hdr['abscissa_first_x'], data_hdr['abscissa_delta_x']) = \
+                struct.unpack('>2f', binary_data[34:42])
+    elif sdf_revision == 2:
+        # Decode the revision 2 stuff
+        (data_hdr['num_points'], data_hdr['last_valid_index']) = \
+                struct.unpack('>2h', binary_data[30:34])
+    elif sdf_revision == 3:
+        # Decode the revision 3 related stuff
+        # FIXME: Add rev 3 stuff later
+        pass
+    else:
+        # SDF revision not recognized
+        sys.exit('Did not recognize SDF revision')
+
+    return data_hdr
 
 def read_sdf_file(sdf_filename):
     '''
@@ -160,8 +218,6 @@ def read_sdf_file(sdf_filename):
     # Change sdf_data to a numpy array
     sdf_data = {}
     sdf_hdr['valid_file_identifier'] = False
-    sdf_hdr['file_hdr'] = {}     # There's only 1 file header record
-    sdf_hdr['measurement_hdr'] = {}     # There's only 1 measurement header record
     sdf_hdr['data_hdr'] = []     # There are 0 or more data header records
     sdf_hdr['vector_hdr'] = []   # There are 0 or more vector header records
     sdf_hdr['channel_hdr'] = []  # There are 0 or more channel header records
@@ -171,6 +227,7 @@ def read_sdf_file(sdf_filename):
         file_identifier = sdf_file.read(2)
         if file_identifier == 'B\x00':
             sdf_hdr['valid_file_identifier'] = True
+            sdf_file_start = sdf_file.tell()
         else:
             # Didn't find a valid file identifer, so bail out
             sys.exit('Did not find a valid file identifier.')
@@ -204,9 +261,30 @@ def read_sdf_file(sdf_filename):
         else:
             sys.exit('Error processing SDF file; expected measurement header')
 
+        # Decode the data header records
+        sdf_hdr['data_hdr'] = []
+        # Initialize record size to 0 until we know the answer
+        data_hdr_record_size = 0
+        for data_hdr_record_index in range(sdf_hdr['file_hdr']['num_data_hdr_records']):
+            # Move to the start of the data header record
+            sdf_file.seek(sdf_hdr['file_hdr']['offset_data_hdr_record'] +
+                    data_hdr_record_index * data_hdr_record_size)
+            # Read the record type and size
+            data_hdr_record_type, data_hdr_record_size = struct.unpack(
+                    record_type_size_format,
+                    sdf_file.read(struct.calcsize(record_type_size_format)))
+            if data_hdr_record_type == 12:
+                # This is a data header record
+                sdf_file.seek(sdf_file.tell() - struct.calcsize(record_type_size_format))
+                sdf_hdr['data_hdr'].append(_decode_sdf_data_hdr(
+                        data_hdr_record_size, sdf_hdr['file_hdr']['sdf_revision'],
+                        sdf_file.read(data_hdr_record_size)))
+            else:
+                sys.exit('This should have been a data header record.')
+
 
         #dt = np.dtype([('file_id', '|a2')])
-        #sdf_data = np.fromfile(sdf_file, dtype=dt, count=1, sep='')
+        #sdf_data = np.fromfile(sdf_file, dtype=dt, count=2, sep='')
 
         #dt = np.dtype([('sdf_file_hdr', [('record_type', 'i1'), ('record_size', 'i2')])])
         #sdf_data2 = np.fromfile(sdf_file, dtype=dt, count=1, sep='')
