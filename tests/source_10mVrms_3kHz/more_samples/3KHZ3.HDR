@@ -1,0 +1,165 @@
+.......................................                               
+SDF_FILE_HDR                                                          
+recordType                    10                                      
+recordSize                    64                                      
+revisionNum                   2                                       
+applic                        HP 35670A                               
+yearStamp                     2013                                    
+monthDayStamp                 213                                     
+hourMinStamp                  908                                     
+applicVer                     "A.01.11"                               
+num_of_DATA_HDR_record        1                                       
+num_of_VECTOR_record          1                                       
+num_of_CHANNEL_record         2                                       
+num_of_UNIQUE_record          1                                       
+num_of_SCAN_STRUCT_record     1                                       
+num_of_XDATA_record           0                                       
+offset_of_DATA_HDR_record     206                                     
+offset_of_VECTOR_record       340                                     
+offset_of_CHANNEL_record      358                                     
+offset_of_UNIQUE_record       742                                     
+offset_of_SCAN_STRUCT_record  1264                                    
+offset_of_XDATA_record        -1                                      
+offset_of_YDATA_record        1304                                    
+.......................................                               
+SDF_MEAS_HDR                                                          
+recordType                    11                                      
+recordSize                    140                                     
+unique_record                 -1                                      
+centerFreqOld                 8192                                    
+spanFreqOld                   16384                                   
+blockSize                     4096                                    
+zoomModeOn                    0                                       
+startFreqIndex                0                                       
+stopFreqIndex                 1600                                    
+averageType                   AVERAGE_OFF                             
+averageNum                    1                                       
+pctOverlap                    0                                       
+measTitle                     ""                                      
+videoBandWidth                0                                       
+centerFreq                    8192                                    
+spanFreq                      16384                                   
+sweepFreq                     0                                       
+measType                      FFT_MEAS                                
+realTime                      1                                       
+detection                     SAMPLE_DETECT                           
+sweepTime                     0                                       
+.......................................                               
+SDF_DATA_HDR                                                          
+recordType                    12                                      
+recordSize                    134                                     
+unique_record                 1010                                    
+dataTitle                     "Pwr Spec"                              
+domain                        FREQ_DOMAIN                             
+dataType                      AUTO_PWR_DATA                           
+num_of_points                 4100                                    
+last_valid_index              2048                                    
+abscissa_firstXOld            0                                       
+abscissa_deltaXOld            8                                       
+xResolution_type              LINEAR_RES                              
+xdata_type                    FLOAT32                                 
+xPerPoint                     0                                       
+ydata_type                    FLOAT32                                 
+yPerPoint                     1                                       
+yIsComplex                    0                                       
+yIsNormalized                 0                                       
+yIsPowerData                  0                                       
+yIsValid                      1                                       
+first_VECTOR_recordNum        0                                       
+total_rows                    1                                       
+total_cols                    1                                       
+xUnit.label                   "Hz"                                    
+xUnit.factor                  6.28319                                 
+xUnit.mass                    0                                       
+xUnit.length                  0                                       
+xUnit.time                    -2                                      
+xUnit.current                 0                                       
+xUnit.temperature             0                                       
+xUnit.luminal_intensity       0                                       
+xUnit.mole                    0                                       
+xUnit.plane_angle             2                                       
+yUnitValid                    0                                       
+yUnit.label                   ""                                      
+yUnit.factor                  1                                       
+yUnit.mass                    0                                       
+yUnit.length                  0                                       
+yUnit.time                    0                                       
+yUnit.current                 0                                       
+yUnit.temperature             0                                       
+yUnit.luminal_intensity       0                                       
+yUnit.mole                    0                                       
+yUnit.plane_angle             0                                       
+abscissa_firstX               0                                       
+abscissa_deltaX               8                                       
+scanData                      0                                       
+windowApplied                 1                                       
+.......................................                               
+SDF_VECTOR_HDR                                                        
+recordType                    13                                      
+recordSize                    18                                      
+unique_record                 -1                                      
+the_CHANNEL_record[0]         0                                       
+the_CHANNEL_record[1]         -1                                      
+pwrOfChan[0]                  96                                      
+pwrOfChan[1]                  0                                       
+.......................................                               
+SDF_CHANNEL_HDR                                                       
+recordType                    14                                      
+recordSize                    192                                     
+unique_record                 -1                                      
+channelLabel                  "Chan  1"                               
+moduleId                      "HP35670A"                              
+serialNum                     "MY42506778"                            
+window.windowType             FLAT_TOP                                
+window.windowCorrMode         CORR_NOT_APPLIED                        
+window.windowBandWidth        3.81936                                 
+window.windowTimeConst        0                                       
+window.windowTrunc            0                                       
+window.wideBandCorr           2.398235                                
+window.narrowBandCorr         4.686914                                
+weight                        NO_WEIGHTING                            
+delay                         0                                       
+range                         -32.94331                               
+direction                     Z_DIRECTION                             
+pointNum                      1                                       
+coupling                      DC_COUPLING                             
+overloaded                    NOT_OVERLOADED                          
+intLabel                      "V"                                     
+engUnit.label                 "V"                                     
+engUnit.factor                1                                       
+engUnit.mass                  2                                       
+engUnit.length                4                                       
+engUnit.time                  -6                                      
+engUnit.current               -2                                      
+engUnit.temperature           0                                       
+engUnit.luminal_intensity     0                                       
+engUnit.mole                  0                                       
+engUnit.plane_angle           0                                       
+int2engrUnit                  1                                       
+inputImpedance                50                                      
+channelAttribute              NO_ATTRIB                               
+aliasProtected                1                                       
+digital                       0                                       
+channelScale                  1                                       
+channelOffset                 0                                       
+gateBegin                     0                                       
+gateEnd                       0                                       
+userDelay                     0                                       
+.......................................                               
+SDF_SCAN_STRUCT                                                       
+recordType                    15                                      
+recordSize                    40                                      
+num_of_scan                   1                                       
+last_scan_index               0                                       
+scan_type                     DEPTH                                   
+scanVar_type                  FLOAT32                                 
+scanUnit.label                "count"                                 
+scanUnit.factor               1                                       
+scanUnit.mass                 0                                       
+scanUnit.length               0                                       
+scanUnit.time                 0                                       
+scanUnit.current              0                                       
+scanUnit.temperature          0                                       
+scanUnit.luminal_intensity    0                                       
+scanUnit.mole                 0                                       
+scanUnit.plane_angle          0                                       
