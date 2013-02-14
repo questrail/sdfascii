@@ -266,6 +266,102 @@ class TestReadingSDFFormat(unittest.TestCase):
     def test_sdf_channel_hdr_record_size(self):
         self.assertEqual(self.sdf_hdr['channel_hdr'][0]['record_size'],192)
 
+    def test_sdf_channel_hdr_unique_record_offset(self):
+        self.assertTrue('offset_unique_record' in self.sdf_hdr['channel_hdr'][0])
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['offset_unique_record'], -1)
+
+    def test_sdf_channel_hdr_channel_label(self):
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['channel_label'],
+                'Chan  1')
+
+    def test_sdf_channel_hdr_module_id(self):
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['module_id'], 'HP35670A')
+
+    def test_sdf_channel_hdr_serial_number(self):
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['serial_number'], 'MY42506778')
+
+    def test_sdf_channel_hdr_window(self):
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['window']['window_type'],
+                'Flat Top')
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['window']['correction_mode'],
+                'Correction not applied')
+        self.assertAlmostEqual(self.sdf_hdr['channel_hdr'][0]['window']['bw'], 
+                3.81935954)
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['window']['time_const'], 0.0)
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['window']['trunc'], 0.0)
+        self.assertAlmostEqual(self.sdf_hdr['channel_hdr'][0]['window']['wide_band_corr'], 
+                2.39823508262)
+        self.assertAlmostEqual(self.sdf_hdr['channel_hdr'][0]['window']['narrow_band_corr'],
+                4.68691444)
+
+    def test_sdf_channel_hdr_weight(self):
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['weight'], 'No weighting')
+
+    def test_sdf_channel_hdr_delay(self):
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['delay'], 0.0)
+
+    def test_sdf_channel_hdf_range(self):
+        self.assertAlmostEqual(self.sdf_hdr['channel_hdr'][0]['range'], -32.943313598)
+
+    def test_sdf_channel_hdr_direction(self):
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['direction'], 'Z')
+
+    def test_sdf_channel_hdr_point_num(self):
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['point_num'], 1)
+
+    def test_sdf_channel_hdr_coupling(self):
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['coupling'], 'DC')
+
+    def test_sdf_channel_hdr_overload(self):
+        self.assertFalse(self.sdf_hdr['channel_hdr'][1]['overloaded'])
+
+    def test_sdf_channel_hdr_int_label(self):
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['int_label'], 'V')
+
+    def test_sdf_channel_hdr_eng_unit(self):
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['eng_unit']['label'], 'V')
+        self.assertAlmostEqual(self.sdf_hdr['channel_hdr'][0]['eng_unit']['factor'], 1)
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['eng_unit']['mass'], 2)
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['eng_unit']['length'], 4)
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['eng_unit']['time'], -6)
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['eng_unit']['current'], -2)
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['eng_unit']['temperature'], 0)
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['eng_unit']['luminal_intensity'], 0)
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['eng_unit']['mole'], 0)
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['eng_unit']['plane_angle'], 0)
+
+    def test_sdf_channel_hdr_int_2_eng_unit(self):
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['int_2_eng_unit'], 1.0)
+
+    def test_sdf_channel_hdr_input_impedance(self):
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['input_impedance'], 50.0)
+
+    def test_sdf_channel_hdr_channel_attribute(self):
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['channel_attribute'],
+                'No attribute')
+
+    def test_sdf_channel_hdr_alias_protected(self):
+        self.assertTrue(self.sdf_hdr['channel_hdr'][0]['alias_protected'])
+
+    def test_sdf_channel_hdr_digital_channel(self):
+        self.assertFalse(self.sdf_hdr['channel_hdr'][0]['digital_channel'])
+
+    def test_sdf_channel_hdr_channel_scale(self):
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['channel_scale'], 1.0)
+
+    def test_sdf_channel_hdr_channel_offset(self):
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['channel_offset'], 0.0)
+
+    def test_sdf_channel_hdr_gate_begin(self):
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['gate_begin'], 0.0)
+
+    def test_sdf_channel_hdr_gate_end(self):
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['gate_end'], 0.0)
+
+    def test_sdf_channel_hdr_user_delay(self):
+        self.assertEqual(self.sdf_hdr['channel_hdr'][0]['user_delay'], 0.0)
+
+
 
 
 

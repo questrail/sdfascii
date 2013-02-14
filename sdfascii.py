@@ -34,6 +34,22 @@ def _convert_sdf_unit_to_dictionary(sdf_unit):
     sdf_unit_dictionary['label'] = _strip_nonprintable(sdf_unit_dictionary['label'])
     return sdf_unit_dictionary
 
+def _convert_sdf_window_to_dictionary(sdf_window):
+    keys = ('window_type', 'correction_mode', 'bw', 'time_const',
+            'trunc', 'wide_band_corr', 'narrow_band_corr')
+    sdf_window_dictionary = dict(zip(keys, sdf_window))
+    # FIXME: Add remaining window types
+    window_type_decoder = {0: 'Window not applied', 1: 'Hanning',
+            2: 'Flat Top', 3: 'Uniform', 4: 'Force'}
+    sdf_window_dictionary['window_type'] = window_type_decoder[
+            sdf_window_dictionary['window_type']]
+    correction_mode_decoder = {0: 'Correction not applied',
+            1: 'Narrow band correction applied',
+            2: 'Wide band correction applied'}
+    sdf_window_dictionary['correction_mode'] = correction_mode_decoder[
+            sdf_window_dictionary['correction_mode']]
+    return sdf_window_dictionary
+
 def _read_hdr(input_hdr_filename):
     pass
 
@@ -244,6 +260,51 @@ def _decode_sdf_channel_hdr(record_size, sdf_revision, binary_data):
     '''
     channel_hdr = {}
     channel_hdr['record_size'] = record_size
+    (channel_hdr['offset_unique_record'],) = \
+            struct.unpack('>l', binary_data[6:10])
+    channel_hdr['channel_label'] = _strip_nonprintable(
+            struct.unpack('>30s', binary_data[10:40])[0])
+    channel_hdr['module_id'] = _strip_nonprintable(
+            struct.unpack('>12s', binary_data[40:52])[0])
+    channel_hdr['serial_number'] = _strip_nonprintable(
+            struct.unpack('>12s', binary_data[52:64])[0])
+    window = struct.unpack('>2h5f', binary_data[64:88])
+    channel_hdr['window'] = _convert_sdf_window_to_dictionary(window)
+    coded_weight, = struct.unpack('>h', binary_data[88:90])
+    weight_decoder = {0: 'No weighting', 1: 'A-weighting',
+            2: 'B-weighting', 3: 'C-weighting'}
+    channel_hdr['weight'] = weight_decoder[coded_weight]
+    (channel_hdr['delay'], channel_hdr['range']) = struct.unpack('>2f', binary_data[90:98])
+    coded_direction, = struct.unpack('>h', binary_data[98:100])
+    direction_decoder = {-9: '-TZ', -8: '-TY', -7: '-TX', -3: '-Z', -2: '-Y',
+            -1: 'X', 0: 'No direction specified', 1: 'X', 2: 'Y', 3: 'Z',
+            4: 'Radial', 5: 'Tangential, theta angle', 6: 'Tangential, phi angle',
+            7: 'TX', 8: 'TY', 9: 'TZ'}
+    channel_hdr['direction'] = direction_decoder[coded_direction]
+    channel_hdr['point_num'], = struct.unpack('>h', binary_data[100:102])
+    coded_coupling, = struct.unpack('>h', binary_data[102:104])
+    coupling_decoder = {0: 'DC', 1: 'AC'}
+    channel_hdr['coupling'] = coupling_decoder[coded_coupling]
+    channel_hdr['overloaded'], = struct.unpack('>h', binary_data[104:106])
+    channel_hdr['overloaded'] = bool(channel_hdr['overloaded'])
+    channel_hdr['int_label'] = _strip_nonprintable(
+            struct.unpack('>10s', binary_data[106:116])[0])
+    eng_unit = struct.unpack('>10sf8b', binary_data[116:138])
+    channel_hdr['eng_unit'] = _convert_sdf_unit_to_dictionary(eng_unit)
+    channel_hdr['int_2_eng_unit'], = struct.unpack('>f', binary_data[138:142])
+    channel_hdr['input_impedance'], = struct.unpack('>f', binary_data[142:146])
+    coded_channel_attribute, = struct.unpack('>h', binary_data[146:148])
+    channel_attribute_decoder = {-99: 'Unknown attribute', 0: 'No attribute',
+            1: 'Tach attribute', 2: 'Reference attribute',
+            3: 'Tach and reference attribute', 4: 'Clockwise attribute'}
+    channel_hdr['channel_attribute'] = channel_attribute_decoder[coded_channel_attribute]
+    channel_hdr['alias_protected'], = struct.unpack('>h', binary_data[148:150])
+    channel_hdr['alias_protected'] = bool(channel_hdr['alias_protected'])
+    channel_hdr['digital_channel'], = struct.unpack('>h', binary_data[150:152])
+    channel_hdr['digital_channel'] = bool(channel_hdr['digital_channel'])
+    (channel_hdr['channel_scale'], channel_hdr['channel_offset'],
+            channel_hdr['gate_begin'], channel_hdr['gate_end'],
+            channel_hdr['user_delay']) = struct.unpack('>5d', binary_data[152:192])
 
     return channel_hdr
 
