@@ -118,6 +118,12 @@ def _decode_sdf_meas_hdr(record_size, sdf_revision, binary_data):
     coded_real_time, = struct.unpack('>h', binary_data[128:130])
     real_time_decoder = {0: 'Not continuous', 1: 'Continuous'}
     meas_hdr['real_time'] = real_time_decoder[coded_real_time]
+    coded_detection, = struct.unpack('>h', binary_data[130:132])
+    detection_decoder = {-99: 'Unknown detection type',
+            0: 'Sample detection', 1: 'Positive peak detection',
+            2: 'Negative peak detection', 3: 'Rose-and-fell detection'}
+    meas_hdr['detection'] = detection_decoder[coded_detection]
+    meas_hdr['sweep_time'], = struct.unpack('>d', binary_data[132:140])
 
     if sdf_revision == 1:
         # Decode the revision 1 stuff

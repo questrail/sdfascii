@@ -142,3 +142,9 @@ class TestReadingSDFFormat(unittest.TestCase):
     def test_sdf_meas_hdr_real_time(self):
         self.assertEqual(self.sdf_hdr['meas_hdr']['real_time'],'Continuous')
 
+    def test_sdf_meas_hdr_detection(self):
+        self.assertEqual(self.sdf_hdr['meas_hdr']['detection'],'Sample detection')
+
+    def test_sdf_meas_hdr_sweep_time(self):
+        self.assertEqual(self.sdf_hdr['meas_hdr']['sweep_time'], 0.0)
+
