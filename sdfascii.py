@@ -308,6 +308,29 @@ def _decode_sdf_channel_hdr(record_size, sdf_revision, binary_data):
 
     return channel_hdr
 
+def _decode_sdf_scan_struct(record_size, sdf_revision, binary_data):
+    '''
+    Decode the channel header binary data
+    '''
+    scan_struct = {}
+    scan_struct['record_size'] = record_size
+    scan_struct['num_of_scans'], = struct.unpack('>h', binary_data[6:8])
+    scan_struct['last_scan_index'], = struct.unpack('>h', binary_data[8:10])
+    coded_scan_type, = struct.unpack('>h', binary_data[10:12])
+    # The HP Standard Data Foramt Utilties User's Guide shows 0 = Depth and 1 = Scan
+    # However, the .DAT file created by 35670A shows 1 = Depth.
+    # I'm going to believe the documentation
+    scan_type_decoder = {0: 'Depth', 1: 'Scan'}
+    scan_struct['scan_type'] = scan_type_decoder[coded_scan_type]
+    coded_scan_var_type, = struct.unpack('>h', binary_data[12:14])
+    scan_var_type_decoder = {1: 'Short', 2: 'Long', 3: 'Float',
+            4: 'Double'}
+    scan_struct['scan_var_type'] = scan_var_type_decoder[coded_scan_var_type]
+    scan_unit = struct.unpack('>10sf8b', binary_data[14:36])
+    scan_struct['scan_unit'] = _convert_sdf_unit_to_dictionary(scan_unit)
+
+    return scan_struct
+
 def read_sdf_file(sdf_filename):
     '''
     Read the binary SDF file.
@@ -430,6 +453,27 @@ def read_sdf_file(sdf_filename):
             else:
                 sys.exit('This should have been a channel header record.')
 
+        # Decode the scan structure records
+        # Initialize record size to 0 until we know the answer
+        scan_struct_record_size = 0
+        for scan_struct_record_index in range(sdf_hdr['file_hdr']['num_scan_struct_records']):
+            # Move to the start of the scan struct record
+            sdf_file.seek(sdf_hdr['file_hdr']['offset_scan_struct_record'] +
+                    scan_struct_record_index * scan_struct_record_size)
+            # Read the record type and size
+            scan_struct_record_type, scan_struct_record_size = struct.unpack(
+                    record_type_size_format,
+                    sdf_file.read(struct.calcsize(record_type_size_format)))
+            if scan_struct_record_type == 15:
+                # This is a channel header record
+                # Backup and read all of the channel header record including
+                # the record type and record size
+                sdf_file.seek(sdf_file.tell() - struct.calcsize(record_type_size_format))
+                sdf_hdr['scan_struct'] = _decode_sdf_scan_struct(
+                    scan_struct_record_size, sdf_hdr['file_hdr']['sdf_revision'],
+                    sdf_file.read(scan_struct_record_size))
+            else:
+                sys.exit('This should have been a scan struct record.')
 
         #dt = np.dtype([('file_id', '|a2')])
         #sdf_data = np.fromfile(sdf_file, dtype=dt, count=2, sep='')

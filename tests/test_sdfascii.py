@@ -265,20 +265,27 @@ class TestReadingSDFFormat(unittest.TestCase):
 
     def test_sdf_channel_hdr_record_size(self):
         self.assertEqual(self.sdf_hdr['channel_hdr'][0]['record_size'],192)
+        self.assertEqual(self.sdf_hdr['channel_hdr'][1]['record_size'],192)
 
     def test_sdf_channel_hdr_unique_record_offset(self):
         self.assertTrue('offset_unique_record' in self.sdf_hdr['channel_hdr'][0])
         self.assertEqual(self.sdf_hdr['channel_hdr'][0]['offset_unique_record'], -1)
+        self.assertTrue('offset_unique_record' in self.sdf_hdr['channel_hdr'][1])
+        self.assertEqual(self.sdf_hdr['channel_hdr'][1]['offset_unique_record'], -1)
 
     def test_sdf_channel_hdr_channel_label(self):
         self.assertEqual(self.sdf_hdr['channel_hdr'][0]['channel_label'],
                 'Chan  1')
+        self.assertEqual(self.sdf_hdr['channel_hdr'][1]['channel_label'],
+                'Chan  1')
 
     def test_sdf_channel_hdr_module_id(self):
         self.assertEqual(self.sdf_hdr['channel_hdr'][0]['module_id'], 'HP35670A')
+        self.assertEqual(self.sdf_hdr['channel_hdr'][1]['module_id'], 'HP35670A')
 
     def test_sdf_channel_hdr_serial_number(self):
         self.assertEqual(self.sdf_hdr['channel_hdr'][0]['serial_number'], 'MY42506778')
+        self.assertEqual(self.sdf_hdr['channel_hdr'][1]['serial_number'], 'MY42506778')
 
     def test_sdf_channel_hdr_window(self):
         self.assertEqual(self.sdf_hdr['channel_hdr'][0]['window']['window_type'],
@@ -361,7 +368,35 @@ class TestReadingSDFFormat(unittest.TestCase):
     def test_sdf_channel_hdr_user_delay(self):
         self.assertEqual(self.sdf_hdr['channel_hdr'][0]['user_delay'], 0.0)
 
+    def test_sdf_scan_struct_record_size(self):
+        self.assertEqual(self.sdf_hdr['scan_struct']['record_size'],40)
 
+    def test_sdf_scan_struct_num_of_scans(self):
+        self.assertEqual(self.sdf_hdr['scan_struct']['num_of_scans'],1)
+
+    def test_sdf_scan_struct_last_scan_index(self):
+        self.assertEqual(self.sdf_hdr['scan_struct']['num_of_scans'],1)
+
+    def test_sdf_scan_struct_last_scan_index(self):
+        self.assertEqual(self.sdf_hdr['scan_struct']['last_scan_index'],0)
+
+    def test_sdf_scan_struct_scan_type(self):
+        self.assertEqual(self.sdf_hdr['scan_struct']['scan_type'], 'Scan')
+
+    def test_sdf_scan_struct_scan_var_type(self):
+        self.assertEqual(self.sdf_hdr['scan_struct']['scan_var_type'], 'Float')
+
+    def test_sdf_scan_struct_scan_unit(self):
+        self.assertEqual(self.sdf_hdr['scan_struct']['scan_unit']['label'], 'count')
+        self.assertAlmostEqual(self.sdf_hdr['scan_struct']['scan_unit']['factor'], 1)
+        self.assertEqual(self.sdf_hdr['scan_struct']['scan_unit']['mass'], 0)
+        self.assertEqual(self.sdf_hdr['scan_struct']['scan_unit']['length'], 0)
+        self.assertEqual(self.sdf_hdr['scan_struct']['scan_unit']['time'], 0)
+        self.assertEqual(self.sdf_hdr['scan_struct']['scan_unit']['current'], 0)
+        self.assertEqual(self.sdf_hdr['scan_struct']['scan_unit']['temperature'], 0)
+        self.assertEqual(self.sdf_hdr['scan_struct']['scan_unit']['luminal_intensity'], 0)
+        self.assertEqual(self.sdf_hdr['scan_struct']['scan_unit']['mole'], 0)
+        self.assertEqual(self.sdf_hdr['scan_struct']['scan_unit']['plane_angle'], 0)
 
 
 
