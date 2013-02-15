@@ -342,8 +342,6 @@ def read_sdf_file(sdf_filename):
 
     '''
     sdf_hdr = {}
-    # FIXME: Change sdf_data to a numpy array
-    sdf_data = {}
     sdf_hdr['valid_file_identifier'] = False
     sdf_hdr['channel_hdr'] = []  # There are 0 or more channel header records
 
@@ -472,6 +470,22 @@ def read_sdf_file(sdf_filename):
                 sdf_hdr['scan_struct'] = _decode_sdf_scan_struct(
                     scan_struct_record_size, sdf_hdr['file_hdr']['sdf_revision'],
                     sdf_file.read(scan_struct_record_size))
+            else:
+                sys.exit('This should have been a scan struct record.')
+
+        # Decode the Y-axis data records
+        # The y-data offset will be -1 if there is no y-data
+        if sdf_hdr['file_hdr']['offset_ydata_record'] >= 0:
+            # Move to the start of the y-axis data record
+            sdf_file.seek(sdf_hdr['file_hdr']['offset_ydata_record'])
+            # Read the record type and size
+            yaxis_data_record_type, yaxis_data_record_size = struct.unpack(
+                    record_type_size_format,
+                    sdf_file.read(struct.calcsize(record_type_size_format)))
+            if yaxis_data_record_type == 17:
+                # This is a y-axis data record
+                sdf_data = np.fromfile(sdf_file, '>f',
+                        count=sdf_hdr['data_hdr'][0]['num_points'], sep='')
             else:
                 sys.exit('This should have been a scan struct record.')
 

@@ -398,7 +398,9 @@ class TestReadingSDFFormat(unittest.TestCase):
         self.assertEqual(self.sdf_hdr['scan_struct']['scan_unit']['mole'], 0)
         self.assertEqual(self.sdf_hdr['scan_struct']['scan_unit']['plane_angle'], 0)
 
-
+    def test_ydata(self):
+        max_value = self.sdf_data[self.sdf_data.argmax()]
+        self.assertEqual(max_value, 0.001009883)
 
 
 
