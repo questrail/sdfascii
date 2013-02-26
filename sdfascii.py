@@ -499,6 +499,12 @@ def read_sdf_file(sdf_filename):
                 # Apply the correction factor and then convert from
                 # Vpk^2 to Vpk and then to Vrms
                 sdf_data = np.sqrt(channel_correction_factor * sdf_data) / np.sqrt(2)
+                # FIXME: I'm only returning the data over the start and stop
+                # frequency indices, which are 0 & 1600, respectively.
+                # The last_valid_index is 2048. Why the discrepancy?
+                start_idx = sdf_hdr['meas_hdr']['start_freq_index']
+                stop_idx = sdf_hdr['meas_hdr']['stop_freq_index']
+                sdf_data = sdf_data[start_idx:stop_idx+1]
             else:
                 sys.exit('This should have been a scan struct record.')
 

@@ -408,7 +408,7 @@ class TestReadingSDFFormat(unittest.TestCase):
         self.assertAlmostEqual(max_value, 0.01009883)
 
     def test_ydata(self):
-        np.testing.assert_array_almost_equal(self.sdf_data[0:1601], self.ascii_ydata)
+        np.testing.assert_array_almost_equal(self.sdf_data, self.ascii_ydata)
 
 
 
