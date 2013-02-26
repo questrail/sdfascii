@@ -502,11 +502,6 @@ def read_sdf_file(sdf_filename):
             else:
                 sys.exit('This should have been a scan struct record.')
 
-        #dt = np.dtype([('file_id', '|a2')])
-        #sdf_data = np.fromfile(sdf_file, dtype=dt, count=2, sep='')
-
-        #dt = np.dtype([('sdf_file_hdr', [('record_type', 'i1'), ('record_size', 'i2')])])
-        #sdf_data2 = np.fromfile(sdf_file, dtype=dt, count=1, sep='')
 
     return sdf_hdr, sdf_data
 

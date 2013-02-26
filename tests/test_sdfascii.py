@@ -17,7 +17,12 @@ class TestReadingSDFFormat(unittest.TestCase):
         sdf_file = os.path.join(source_10mVrms_3kHz_directory,
                 'SDF3KHZ.DAT')
 
+        ascii_ydata_file = os.path.join(source_10mVrms_3kHz_directory,
+                'ASCII3KH.TXT')
+
         self.sdf_hdr, self.sdf_data = sdfascii.read_sdf_file(sdf_file)
+
+        self.ascii_ydata = np.loadtxt(ascii_ydata_file)
 
     def tearDown(self):
         pass
@@ -398,9 +403,12 @@ class TestReadingSDFFormat(unittest.TestCase):
         self.assertEqual(self.sdf_hdr['scan_struct']['scan_unit']['mole'], 0)
         self.assertEqual(self.sdf_hdr['scan_struct']['scan_unit']['plane_angle'], 0)
 
-    def test_ydata(self):
+    def test_ydata_max_value(self):
         max_value = self.sdf_data[self.sdf_data.argmax()]
-        self.assertEqual(max_value, 0.001009883)
+        self.assertAlmostEqual(max_value, 0.01009883)
+
+    def test_ydata(self):
+        np.testing.assert_array_almost_equal(self.sdf_data[0:1601], self.ascii_ydata)
 
 
 
