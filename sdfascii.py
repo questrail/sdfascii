@@ -486,6 +486,19 @@ def read_sdf_file(sdf_filename):
                 # This is a y-axis data record
                 sdf_data = np.fromfile(sdf_file, '>f',
                         count=sdf_hdr['data_hdr'][0]['num_points'], sep='')
+                # TODO: Should probably leave in the native units unless
+                # the user requests something else, but I'm going to cheat
+                # and return just Vrms given this only works for the 
+                # 35670A DSA currently.
+                # FIXME: I'm cheating! I know that my data is only on the first channel
+                # and that it uses the narrow_band_correction to convert from
+                # Vpk^2 (native units) to Vrms
+                channel_correction_factor = ((sdf_hdr['channel_hdr'][0]['window']['narrow_band_corr'] /
+                    sdf_hdr['channel_hdr'][0]['int_2_eng_unit']) **
+                        (sdf_hdr['vector_hdr'][0]['channel_power_48x'][0] / 48))
+                # Apply the correction factor and then convert from
+                # Vpk^2 to Vpk and then to Vrms
+                sdf_data = np.sqrt(channel_correction_factor * sdf_data) / np.sqrt(2)
             else:
                 sys.exit('This should have been a scan struct record.')
 
