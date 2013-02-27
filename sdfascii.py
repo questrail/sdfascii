@@ -50,20 +50,33 @@ def _convert_sdf_window_to_dictionary(sdf_window):
             sdf_window_dictionary['correction_mode']]
     return sdf_window_dictionary
 
-def _read_hdr(input_hdr_filename):
+def _read_ascii_hdr(input_hdr_filename):
     pass
 
-def _read_txt(input_txt_filename):
+def _read_ascii_ydata(input_txt_filename):
     pass
 
-def _read_x(input_x_filename):
+def _read_ascii_xdata(input_x_filename):
     pass
 
-def _read_z(input_z_filename):
+def _read_ascii_zdata(input_z_filename):
     pass
 
-def read_ascii(input_ascii_base_filename):
-    pass
+def read_ascii_files(input_ascii_base_filename):
+    # Create the four filenames
+    ascii_hdr_filename = input_ascii_base_filename + '.HDR'
+    ascii_ydata_filename = input_ascii_base_filename + '.TXT'
+    ascii_xdata_filename = input_ascii_base_filename + '.X'
+    ascii_zdata_filename = input_ascii_base_filename + '.Z'
+
+    # Read the x and y data
+    xdata = np.loadtxt(ascii_xdata_filename)
+    ydata = np.loadtxt(ascii_ydata_filename)
+
+    # Return the x and y data as a structured array
+    return np.core.records.fromarrays([xdata, ydata],
+            names='frequency,amplitude')
+
 
 def _decode_sdf_file_hdr(record_size, binary_data):
     '''

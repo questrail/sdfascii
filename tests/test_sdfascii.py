@@ -410,5 +410,33 @@ class TestReadingSDFFormat(unittest.TestCase):
     def test_ydata(self):
         np.testing.assert_array_almost_equal(self.sdf_data, self.ascii_ydata)
 
+class TestReadingASCIIFormat(unittest.TestCase):
 
+    def setUp(self):
+        source_10mVrms_3kHz_directory = os.path.join(
+                os.path.dirname(os.path.realpath(__file__)),
+                'source_10mVrms_3kHz')
+
+        ascii_file_basename = os.path.join(source_10mVrms_3kHz_directory,
+                'ASCII3KH')
+
+        self.ascii_data = sdfascii.read_ascii_files(ascii_file_basename)
+
+    def tearDown(self):
+        pass
+
+    def test_starting_frequency(self):
+        self.assertEqual(self.ascii_data['frequency'][0],0)
+
+    def test_ending_frequency(self):
+        self.assertEqual(self.ascii_data['frequency'][-1],12800)
+
+    def test_all_frequencies(self):
+        frequency_answer = np.linspace(0, 12800, 1601)
+        np.testing.assert_array_equal(self.ascii_data['frequency'],
+                frequency_answer)
+
+    def test_ydata_max_value(self):
+        max_value = self.ascii_data.amplitude[self.ascii_data.amplitude.argmax()]
+        self.assertAlmostEqual(max_value, 0.01009883)
 
