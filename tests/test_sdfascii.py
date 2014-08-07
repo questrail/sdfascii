@@ -1,4 +1,11 @@
 # -*- coding: utf-8 -*-
+
+# Try to future proof code so that it's Python 3.x ready
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
+
 import datetime
 import os
 import unittest
@@ -10,22 +17,22 @@ import sdfascii
 
 class TestReadingSDFFormat(unittest.TestCase):
 
-    def setUp(self):
-        source_10mVrms_3kHz_directory = os.path.join(
+    def setUp(self):  # noqa
+        source_10mvrms_3khz_directory = os.path.join(
             os.path.dirname(os.path.realpath(__file__)),
             'source_10mVrms_3kHz')
 
-        sdf_file = os.path.join(source_10mVrms_3kHz_directory,
+        sdf_file = os.path.join(source_10mvrms_3khz_directory,
                                 'SDF3KHZ.DAT')
 
-        ascii_ydata_file = os.path.join(source_10mVrms_3kHz_directory,
+        ascii_ydata_file = os.path.join(source_10mvrms_3khz_directory,
                                         'ASCII3KH.TXT')
 
         self.sdf_hdr, self.sdf_data = sdfascii.read_sdf_file(sdf_file)
 
         self.ascii_ydata = np.loadtxt(ascii_ydata_file)
 
-    def tearDown(self):
+    def tearDown(self):  # noqa
         pass
 
     def test_reading_sdf_file_identifier(self):
@@ -477,17 +484,17 @@ class TestReadingSDFFormat(unittest.TestCase):
 
 class TestReadingASCIIFormat(unittest.TestCase):
 
-    def setUp(self):
-        source_10mVrms_3kHz_directory = os.path.join(
+    def setUp(self):  # noqa
+        source_10mvrms_3khz_directory = os.path.join(
             os.path.dirname(os.path.realpath(__file__)),
             'source_10mVrms_3kHz')
 
-        ascii_file_basename = os.path.join(source_10mVrms_3kHz_directory,
+        ascii_file_basename = os.path.join(source_10mvrms_3khz_directory,
                                            'ASCII3KH')
 
         self.ascii_data = sdfascii.read_ascii_files(ascii_file_basename)
 
-    def tearDown(self):
+    def tearDown(self):  # noqa
         pass
 
     def test_starting_frequency(self):

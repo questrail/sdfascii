@@ -11,7 +11,7 @@ Agilent 35670A DSA.
 
 # Try to future proof code so that it's Python 3.x ready
 from __future__ import print_function
-# from __future__ import unicode_literals
+from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
 
@@ -23,16 +23,22 @@ import sys
 # Data analysis related imports
 import numpy as np
 
-__version__ = '0.1'
+import six
+
+__version__ = '0.2'
 
 
-def _strip_nonprintable(input_string):
+def _strip_nonprintable(input_bytes):
     '''
     (str) -> str
 
-    Return input_string without nonprintable characters
+    Return string without nonprintable characters
+
+    Actually this take a bytes object and converts it to a string only
+    returning any character up to but not including the first instance of
+    "\x00"
     '''
-    return input_string.split('\x00', 1)[0]
+    return input_bytes.decode(errors="replace").split('\x00', 1)[0]
 
 
 def _convert_sdf_unit_to_dictionary(sdf_unit):
@@ -88,8 +94,12 @@ def read_ascii_files(input_ascii_base_filename):
     ydata = np.loadtxt(ascii_ydata_filename)
 
     # Return the x and y data as a structured array
-    return np.core.records.fromarrays([xdata, ydata],
-                                      names='frequency,amplitude')
+    if six.PY2:
+        return np.core.records.fromarrays(
+            [xdata, ydata], names=b'frequency,amplitude')
+    elif six.PY3:
+        return np.core.records.fromarrays(
+            [xdata, ydata], names='frequency,amplitude')
 
 
 def _decode_sdf_file_hdr(record_size, binary_data):
@@ -144,6 +154,9 @@ def _decode_sdf_meas_hdr(record_size, sdf_revision, binary_data):
     Decode the measurement header binary data
     '''
     meas_hdr = {}
+    record_size_from_binary_data = struct.unpack('>l', binary_data[2:6])[0]
+    if record_size != record_size_from_binary_data:
+        sys.exit('Bad record size in SDF_MEAS_HDR')
     meas_hdr['record_size'] = record_size
     (meas_hdr['offset_unique_record'],) = struct.unpack(
         '>1l', binary_data[6:10])
@@ -157,8 +170,7 @@ def _decode_sdf_meas_hdr(record_size, sdf_revision, binary_data):
     meas_hdr['average_type'] = average_type_decoder[coded_average_type]
     meas_hdr['average_num'], = struct.unpack('>l', binary_data[30:34])
     meas_hdr['pct_overlap'], = struct.unpack('>f', binary_data[34:38])
-    meas_hdr['meas_title'] = _strip_nonprintable(
-        struct.unpack('>60s', binary_data[38:98])[0])
+    meas_hdr['meas_title'] = _strip_nonprintable(binary_data[38:98])
     meas_hdr['video_bw'], = struct.unpack('>f', binary_data[98:102])
     (meas_hdr['center_freq'], meas_hdr['span_freq'],
         meas_hdr['sweep_freq']) = struct.unpack(
@@ -397,11 +409,11 @@ def read_sdf_file(sdf_filename):
     with open(sdf_filename, 'rb') as sdf_file:
         # Read SDF file_identfication
         file_identifier = sdf_file.read(2)
-        if file_identifier == 'B\x00':
+        if file_identifier == b'B\x00':
             sdf_hdr['valid_file_identifier'] = True
         else:
             # Didn't find a valid file identifer, so bail out
-            sys.exit('Did not find a valid file identifier.')
+            sys.exit('Invalid file identifier: {}'.format(file_identifier))
 
         # Determine record type (short) and record size (long)
         # Every record has these two special fields at the start

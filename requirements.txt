@@ -6,3 +6,4 @@ numpy==1.8.1
 pep8==1.5.7
 pyflakes==0.8.1
 pypandoc==0.8.2
+six==1.7.3

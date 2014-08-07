@@ -4,8 +4,8 @@
 [![PyPi Version][pypi ver image]][pypi ver link]
 [![Coverage Status][coveralls image]][coveralls link]
 
-A Python (2.6+) module for reading Standard Data Format (SDF) and ASCII
-files saved by HP/Agilent Dynamic Signal Analyzers (DSA).
+A Python (2.6+/3.3+) module for reading Standard Data Format (SDF) and
+ASCII files saved by HP/Agilent Dynamic Signal Analyzers (DSA).
 
 The HP/Agilent 35670A Dynamic Signal Analyzer has the ability to save
 files as either SDF or ASCII format.
