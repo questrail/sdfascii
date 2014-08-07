@@ -4,8 +4,8 @@
 [![PyPi Version][pypi ver image]][pypi ver link]
 [![Coverage Status][coveralls image]][coveralls link]
 
-A Python module for reading Standard Data Format (SDF) and ASCII files
-saved by HP/Agilent Dynamic Signal Analyzers (DSA).
+A Python (2.6+) module for reading Standard Data Format (SDF) and ASCII
+files saved by HP/Agilent Dynamic Signal Analyzers (DSA).
 
 The HP/Agilent 35670A Dynamic Signal Analyzer has the ability to save
 files as either SDF or ASCII format.
@@ -18,7 +18,7 @@ Four files are created when saving to the HP/Agilent DSA ASCII format:
 2. `.TXT` contains the y-axis information, preserving the same units as
    displayed on the analyzer screen when the trace was saved
 3. `.X` contains the x-axis information
-4. `.Z` contines the z-axis information, if the trace contains waterfall
+4. `.Z` contains the z-axis information, if the trace contains waterfall
    data
 
 Source: Agilent discussion forum question [When I save the trace in the
@@ -36,7 +36,7 @@ a pull request.  [GitHub Flow][] is summarized as:
   `master` (e.g., `new-oauth2-scopes`)
 - Commit to that branch locally and regularly push your work to the same
   named branch on the server
-- When you need feedback or help, or you think the brnach is ready for
+- When you need feedback or help, or you think the branch is ready for
   merging, open a [pull request][].
 - After someone else has reviewed and signed off on the feature, you can
   merge it into master.
