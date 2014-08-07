@@ -1,0 +1,14 @@
+language: python
+os:
+- linux
+- osx
+python:
+- '2.6'
+- '2.7'
+- '3.3'
+- '3.4'
+install:
+- pip install -r requirements.txt
+- pip install coveralls
+script: nosetests --with-coverage --cover-package=sdfascii
+after_success: coveralls
