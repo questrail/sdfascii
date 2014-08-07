@@ -24,8 +24,15 @@ import sys
 # Data analysis related imports
 import numpy as np
 
+__version__ = '0.1'
+
 
 def _strip_nonprintable(input_string):
+    '''
+    (str) -> str
+
+    Return input_string without nonprintable characters
+    '''
     return input_string.split('\x00', 1)[0]
 
 
