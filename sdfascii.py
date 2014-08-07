@@ -11,13 +11,12 @@ Agilent 35670A DSA.
 
 # Try to future proof code so that it's Python 3.x ready
 from __future__ import print_function
-#from __future__ import unicode_literals
+# from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
 
 # Standard module imports
 import datetime
-import string
 import struct
 import sys
 
@@ -81,10 +80,8 @@ def _read_ascii_zdata(input_z_filename):
 
 def read_ascii_files(input_ascii_base_filename):
     # Create the four filenames
-    ascii_hdr_filename = input_ascii_base_filename + '.HDR'
     ascii_ydata_filename = input_ascii_base_filename + '.TXT'
     ascii_xdata_filename = input_ascii_base_filename + '.X'
-    ascii_zdata_filename = input_ascii_base_filename + '.Z'
 
     # Read the x and y data
     xdata = np.loadtxt(ascii_xdata_filename)
@@ -402,7 +399,6 @@ def read_sdf_file(sdf_filename):
         file_identifier = sdf_file.read(2)
         if file_identifier == 'B\x00':
             sdf_hdr['valid_file_identifier'] = True
-            sdf_file_start = sdf_file.tell()
         else:
             # Didn't find a valid file identifer, so bail out
             sys.exit('Did not find a valid file identifier.')
