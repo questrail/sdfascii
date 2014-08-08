@@ -49,15 +49,15 @@ a pull request.  [GitHub Flow][] is summarized as:
 [LICENSE.txt][] file for more information.
 
 [1]: http://www.home.agilent.com/agilent/editorial.jspx?ckey=628664&id=628664&nid=-536902471.0.00&lc=eng&cc=IN
-[coveralls image]: https://coveralls.io/repos/questrail/sdfascii/badge.png
+[coveralls image]:http://img.shields.io/coveralls/questrail/sdfascii/master.svg
 [coveralls link]: https://coveralls.io/r/questrail/sdfascii
 [github flow]: http://scottchacon.com/2011/08/31/github-flow.html
 [LICENSE.txt]: https://github.com/questrail/sdfascii/blob/master/LICENSE.txt
 [numpy]: http://www.numpy.org
 [pull request]: https://help.github.com/articles/using-pull-requests
-[pypi ver image]: https://badge.fury.io/py/sdfascii.svg
-[pypi ver link]: http://badge.fury.io/py/sdfascii
+[pypi ver image]: http://img.shields.io/pypi/v/sdfascii.svg
+[pypi ver link]: https://pypi.python.org/pypi/sdfascii/
 [scott chacon]: http://scottchacon.com/about.html
 [sdfascii]: https://github.com/questrail/sdfascii
-[travis image]: https://travis-ci.org/questrail/sdfascii.png?branch=master
+[travis image]: http://img.shields.io/travis/questrail/sdfascii/master.svg
 [travis link]: https://travis-ci.org/questrail/sdfascii
