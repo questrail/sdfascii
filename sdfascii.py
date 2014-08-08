@@ -38,7 +38,7 @@ def _strip_nonprintable(input_bytes):
     returning any character up to but not including the first instance of
     "\x00"
     '''
-    return input_bytes.decode(errors="replace").split('\x00', 1)[0]
+    return input_bytes.decode('utf-8', 'replace').split('\x00', 1)[0]
 
 
 def _convert_sdf_unit_to_dictionary(sdf_unit):
@@ -113,7 +113,7 @@ def _decode_sdf_file_hdr(record_size, binary_data):
     '''
     file_hdr = {}
     file_hdr['record_size'] = record_size
-    file_hdr['sdf_revision'], = struct.unpack('>h', binary_data[6:8])
+    file_hdr['sdf_revision'], = struct.unpack(b'>h', binary_data[6:8])
     application_code, = struct.unpack('>h', binary_data[8:10])
     application_decoder = {-1: 'HP VISTA', -2: 'HP SINE', -3: 'HP 35660A',
                            -4: 'HP 3562A, HP 3563A', -5: 'HP 3588A',
@@ -124,22 +124,22 @@ def _decode_sdf_file_hdr(record_size, binary_data):
                            9: 'HP 3569A', 10: 'HP 35670A', 11: 'HP 3587S'}
     file_hdr['application'] = application_decoder[application_code]
     msr_year, msr_month_day, msr_hour_min = struct.unpack(
-        '>hhh', binary_data[10:16])
+        b'>hhh', binary_data[10:16])
     msr_month, msr_day = divmod(msr_month_day, 100)
     msr_hour, msr_sec = divmod(msr_hour_min, 100)
     file_hdr['measurement_start_datetime'] = datetime.datetime(
         msr_year, msr_month, msr_day, msr_hour, msr_sec)
     file_hdr['application_version'] = _strip_nonprintable(
-        struct.unpack('>8s', binary_data[16:24])[0])
+        struct.unpack(b'>8s', binary_data[16:24])[0])
     (file_hdr['num_data_hdr_records'], file_hdr['num_vector_hdr_records'],
         file_hdr['num_channel_hdr_records'], file_hdr['num_unique_records'],
         file_hdr['num_scan_struct_records'], file_hdr['num_xdata_records']) = \
-        struct.unpack('>6h', binary_data[24:36])
+        struct.unpack(b'>6h', binary_data[24:36])
     (file_hdr['offset_data_hdr_record'], file_hdr['offset_vector_record'],
         file_hdr['offset_channel_record'], file_hdr['offset_unique_record'],
         file_hdr['offset_scan_struct_record'], file_hdr['offset_xdata_record'],
         file_hdr['offset_ydata_record']) = \
-        struct.unpack('>7l', binary_data[36:64])
+        struct.unpack(b'>7l', binary_data[36:64])
 
     if file_hdr['sdf_revision'] == 3:
         # Continue reading bytes 65-80 if this is SDF ver. 3
@@ -154,12 +154,12 @@ def _decode_sdf_meas_hdr(record_size, sdf_revision, binary_data):
     Decode the measurement header binary data
     '''
     meas_hdr = {}
-    record_size_from_binary_data = struct.unpack('>l', binary_data[2:6])[0]
+    record_size_from_binary_data = struct.unpack(b'>l', binary_data[2:6])[0]
     if record_size != record_size_from_binary_data:
         sys.exit('Bad record size in SDF_MEAS_HDR')
     meas_hdr['record_size'] = record_size
     (meas_hdr['offset_unique_record'],) = struct.unpack(
-        '>1l', binary_data[6:10])
+        b'>1l', binary_data[6:10])
     meas_hdr['block_size'], = struct.unpack('>l', binary_data[18:22])
     meas_hdr['zoom_mode_on'], = struct.unpack('>h', binary_data[22:24])
     meas_hdr['zoom_mode_on'] = bool(meas_hdr['zoom_mode_on'])
@@ -169,12 +169,12 @@ def _decode_sdf_meas_hdr(record_size, sdf_revision, binary_data):
                             5: 'Continuous Peak Hold', 6: 'Peak'}
     meas_hdr['average_type'] = average_type_decoder[coded_average_type]
     meas_hdr['average_num'], = struct.unpack('>l', binary_data[30:34])
-    meas_hdr['pct_overlap'], = struct.unpack('>f', binary_data[34:38])
+    meas_hdr['pct_overlap'], = struct.unpack(b'>f', binary_data[34:38])
     meas_hdr['meas_title'] = _strip_nonprintable(binary_data[38:98])
     meas_hdr['video_bw'], = struct.unpack('>f', binary_data[98:102])
     (meas_hdr['center_freq'], meas_hdr['span_freq'],
         meas_hdr['sweep_freq']) = struct.unpack(
-            '>3d', binary_data[102:126])
+            b'>3d', binary_data[102:126])
     coded_meas_type, = struct.unpack('>h', binary_data[126:128])
     # FIXME: Need to add the other measurement types
     meas_type_decoder = {-99: 'Unknown measurement', 0: 'Spectrum measurement',
@@ -191,7 +191,7 @@ def _decode_sdf_meas_hdr(record_size, sdf_revision, binary_data):
                          2: 'Negative peak detection',
                          3: 'Rose-and-fell detection'}
     meas_hdr['detection'] = detection_decoder[coded_detection]
-    meas_hdr['sweep_time'], = struct.unpack('>d', binary_data[132:140])
+    meas_hdr['sweep_time'], = struct.unpack(b'>d', binary_data[132:140])
 
     if sdf_revision == 1:
         # Decode the revision 1 stuff
@@ -200,7 +200,7 @@ def _decode_sdf_meas_hdr(record_size, sdf_revision, binary_data):
     elif sdf_revision == 2:
         # Decode the revision 2 stuff
         (meas_hdr['start_freq_index'], meas_hdr['stop_freq_index']) = \
-            struct.unpack('>2h', binary_data[24:28])
+            struct.unpack(b'>2h', binary_data[24:28])
     elif sdf_revision == 3:
         # Decode the revision 3 related stuff
         # FIXME: Add rev 3 stuff later
@@ -221,7 +221,7 @@ def _decode_sdf_data_hdr(record_size, sdf_revision, binary_data):
     (data_hdr['offset_unique_record'],) = \
         struct.unpack('>1l', binary_data[6:10])
     data_hdr['data_title'] = _strip_nonprintable(
-        struct.unpack('>16s', binary_data[10:26])[0])
+        struct.unpack(b'>16s', binary_data[10:26])[0])
     coded_domain, = struct.unpack('>h', binary_data[26:28])
     domain_decoder = {-99: 'Unknown', 0: 'Frequency domain',
                       1: 'Time domain', 2: 'Amplitude domain',
@@ -260,7 +260,7 @@ def _decode_sdf_data_hdr(record_size, sdf_revision, binary_data):
         '>l', binary_data[60:64])
     data_hdr['total_rows'], data_hdr['total_cols'] = struct.unpack(
         '>2h', binary_data[64:68])
-    xunit = struct.unpack('>10sf8b', binary_data[68:90])
+    xunit = struct.unpack(b'>10sf8b', binary_data[68:90])
     data_hdr['xunit'] = _convert_sdf_unit_to_dictionary(xunit)
     data_hdr['y_unit_valid'], = struct.unpack('>h', binary_data[90:92])
     data_hdr['y_unit_valid'] = bool(data_hdr['y_unit_valid'])
@@ -277,7 +277,7 @@ def _decode_sdf_data_hdr(record_size, sdf_revision, binary_data):
         (data_hdr['num_points'], data_hdr['last_valid_index']) = \
             struct.unpack('>2h', binary_data[30:34])
         (data_hdr['abscissa_first_x'], data_hdr['abscissa_delta_x']) = \
-            struct.unpack('>2d', binary_data[114:130])
+            struct.unpack(b'>2d', binary_data[114:130])
         data_hdr['scan_data'], = struct.unpack('>h', binary_data[130:132])
         data_hdr['scan_data'] = bool(data_hdr['scan_data'])
         data_hdr['window_applied'], = struct.unpack('>h', binary_data[132:134])
@@ -316,19 +316,19 @@ def _decode_sdf_channel_hdr(record_size, sdf_revision, binary_data):
     (channel_hdr['offset_unique_record'],) = \
         struct.unpack('>l', binary_data[6:10])
     channel_hdr['channel_label'] = _strip_nonprintable(
-        struct.unpack('>30s', binary_data[10:40])[0])
+        struct.unpack(b'>30s', binary_data[10:40])[0])
     channel_hdr['module_id'] = _strip_nonprintable(
-        struct.unpack('>12s', binary_data[40:52])[0])
+        struct.unpack(b'>12s', binary_data[40:52])[0])
     channel_hdr['serial_number'] = _strip_nonprintable(
         struct.unpack('>12s', binary_data[52:64])[0])
-    window = struct.unpack('>2h5f', binary_data[64:88])
+    window = struct.unpack(b'>2h5f', binary_data[64:88])
     channel_hdr['window'] = _convert_sdf_window_to_dictionary(window)
     coded_weight, = struct.unpack('>h', binary_data[88:90])
     weight_decoder = {0: 'No weighting', 1: 'A-weighting',
                       2: 'B-weighting', 3: 'C-weighting'}
     channel_hdr['weight'] = weight_decoder[coded_weight]
     (channel_hdr['delay'], channel_hdr['range']) = struct.unpack(
-        '>2f', binary_data[90:98])
+        b'>2f', binary_data[90:98])
     coded_direction, = struct.unpack('>h', binary_data[98:100])
     direction_decoder = {-9: '-TZ', -8: '-TY', -7: '-TX', -3: '-Z',
                          -2: '-Y', -1: 'X', 0: 'No direction specified',
@@ -344,7 +344,7 @@ def _decode_sdf_channel_hdr(record_size, sdf_revision, binary_data):
     channel_hdr['overloaded'], = struct.unpack('>h', binary_data[104:106])
     channel_hdr['overloaded'] = bool(channel_hdr['overloaded'])
     channel_hdr['int_label'] = _strip_nonprintable(
-        struct.unpack('>10s', binary_data[106:116])[0])
+        struct.unpack(b'>10s', binary_data[106:116])[0])
     eng_unit = struct.unpack('>10sf8b', binary_data[116:138])
     channel_hdr['eng_unit'] = _convert_sdf_unit_to_dictionary(eng_unit)
     channel_hdr['int_2_eng_unit'], = struct.unpack('>f', binary_data[138:142])
@@ -362,7 +362,8 @@ def _decode_sdf_channel_hdr(record_size, sdf_revision, binary_data):
     channel_hdr['digital_channel'] = bool(channel_hdr['digital_channel'])
     (channel_hdr['channel_scale'], channel_hdr['channel_offset'],
         channel_hdr['gate_begin'], channel_hdr['gate_end'],
-        channel_hdr['user_delay']) = struct.unpack('>5d', binary_data[152:192])
+        channel_hdr['user_delay']) = struct.unpack(
+            b'>5d', binary_data[152:192])
 
     return channel_hdr
 
@@ -422,7 +423,8 @@ def read_sdf_file(sdf_filename):
         # Process the file header record
         file_hdr_record_type, file_hdr_record_size = struct.unpack(
             record_type_size_format,
-            sdf_file.read(struct.calcsize(record_type_size_format)))
+            sdf_file.read(struct.calcsize(
+                record_type_size_format.encode())))
         if file_hdr_record_type == 10:
             # Found the file header record
             # Process the entire file header record including the record type
