@@ -1,16 +1,20 @@
 # Changelog
 
-### develop (unreleased)
+## develop (unreleased)
 
-### v0.2 (August 7, 2014)
+## v0.2.1 (August 8, 2014)
 
-#### Enhancements
+- Fixes unit tests in Python 2.6 [#6][]
+
+## v0.2 (August 7, 2014)
+
+### Enhancements
 
 - Made Python 3.3/3.4 compatible [#5][]
 
-### v0.1 (August 7, 2014)
+## v0.1 (August 7, 2014)
 
-#### Enhancements
+### Enhancements
 
 - Add Travis-CI testing [#1][]
 - Create invoke tasks to automate PyPi deploy [#2][]
@@ -21,3 +25,4 @@
 [#3]: https://github.com/questrail/sdfascii/issues/3
 [#4]: https://github.com/questrail/sdfascii/issues/4
 [#5]: https://github.com/questrail/sdfascii/issues/5
+[#6]: https://github.com/questrail/sdfascii/issues/6
