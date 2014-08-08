@@ -25,7 +25,7 @@ import numpy as np
 
 import six
 
-__version__ = '0.2.2'
+__version__ = '0.2.3'
 
 
 def _strip_nonprintable(input_bytes):

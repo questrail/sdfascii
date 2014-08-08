@@ -1,14 +1,22 @@
 # sdfascii
 
-[![Build Status][travis image]][travis link]
 [![PyPi Version][pypi ver image]][pypi ver link]
+[![Build Status][travis image]][travis link]
 [![Coverage Status][coveralls image]][coveralls link]
+[![License Badge][license image]][LICENSE.txt]
 
-A Python (2.6+/3.3+) module for reading Standard Data Format (SDF) and
-ASCII files saved by HP/Agilent Dynamic Signal Analyzers (DSA).
+[sdfascii][] is a Python (2.6+/3.3+) module for reading the HP/Agilent
+Standard Data Format (SDF) binary files and the ASCII files saved by
+HP/Agilent Dynamic Signal Analyzers (DSA).
 
 The HP/Agilent 35670A Dynamic Signal Analyzer has the ability to save
 files as either SDF or ASCII format.
+
+## HP/Agilent SDF Binary Format
+
+The "Standard Data Format Utilities User's Guide" version B.02.01,
+manufacturing part number num 5963-1715 ([link to PDF][sdf guide]), was
+used to determine the SDF file format.
 
 ## HP/Agilent DSA ASCII Format
 
@@ -53,11 +61,13 @@ a pull request.  [GitHub Flow][] is summarized as:
 [coveralls link]: https://coveralls.io/r/questrail/sdfascii
 [github flow]: http://scottchacon.com/2011/08/31/github-flow.html
 [LICENSE.txt]: https://github.com/questrail/sdfascii/blob/master/LICENSE.txt
+[license image]: http://img.shields.io/pypi/l/sdfascii.svg
 [numpy]: http://www.numpy.org
 [pull request]: https://help.github.com/articles/using-pull-requests
 [pypi ver image]: http://img.shields.io/pypi/v/sdfascii.svg
 [pypi ver link]: https://pypi.python.org/pypi/sdfascii/
 [scott chacon]: http://scottchacon.com/about.html
+[sdf guide]: http://cp.literature.agilent.com/litweb/pdf/5963-1715.pdf
 [sdfascii]: https://github.com/questrail/sdfascii
 [travis image]: http://img.shields.io/travis/questrail/sdfascii/master.svg
 [travis link]: https://travis-ci.org/questrail/sdfascii

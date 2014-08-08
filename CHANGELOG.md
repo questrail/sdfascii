@@ -3,6 +3,12 @@ This file contains all notable changes to the [sdfascii][] project.
 
 ## develop (unreleased)
 
+## v0.2.3 - 2014-08-08
+
+### Enhancements
+- Add license badge
+- Renamed AUTHORS.txt to AUTHORS.md
+- Updated README.md
 
 ## v0.2.2 - 2014-08-08
 

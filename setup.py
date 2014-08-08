@@ -45,7 +45,7 @@ setup(
     author_email='matthew@questrail.com',
     py_modules=['sdfascii'],
     url='http://github.com/questrail/sdfascii',
-    license='LICENSE.txt',
+    license='MIT',
     description='Read HP SDF binary and ASCII files',
     long_description=long_description,
     requires=['numpy (>=1.6.0)'],
