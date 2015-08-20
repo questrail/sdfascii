@@ -3,6 +3,16 @@ This file contains all notable changes to the [sdfascii][] project.
 
 ## develop (unreleased)
 
+## v0.3.0 - 2015-08-20
+
+### Added
+- Invoke `inv test` task now checks for test coverage.
+
+### Changed
+- Migrated from Travis legacy to container-based infrastructure.
+- Updated numpy from 1.8.1 to 1.9.2.
+- Updated other pip requirements.
+
 ## v0.2.3 - 2014-08-08
 
 ### Enhancements

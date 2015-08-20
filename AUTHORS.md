@@ -1,9 +1,9 @@
 # AUTHORS.md
 
-This file lists the author, maintainers, and contirbutors for the
+This file lists the authors, maintainers, and contributors for the
 [sdfascii][] project.
 
-## Author
+## Authors
 - Matthew Rankin
 
 ## Maintainers

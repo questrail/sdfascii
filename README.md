@@ -14,9 +14,9 @@ files as either SDF or ASCII format.
 
 ## HP/Agilent SDF Binary Format
 
-The "Standard Data Format Utilities User's Guide" version B.02.01,
-manufacturing part number num 5963-1715 ([link to PDF][sdf guide]), was
-used to determine the SDF file format.
+The ["Standard Data Format Utilities User's Guide"][sdf guide] version
+B.02.01, P/N 5963-1715 was used to determine the SDF file format while
+developing [sdfascii][].
 
 ## HP/Agilent DSA ASCII Format
 
