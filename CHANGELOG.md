@@ -3,7 +3,7 @@ This file contains all notable changes to the [sdfascii][] project.
 
 ## develop (unreleased)
 
-## v0.3.0 - 2015-08-20
+## v0.3.1 - 2015-08-20
 
 ### Added
 - Invoke `inv test` task now checks for test coverage.
