@@ -25,7 +25,7 @@ import numpy as np
 
 import six
 
-__version__ = '0.3.1'
+__version__ = '0.4.0'
 
 
 def _strip_nonprintable(input_bytes):
@@ -594,6 +594,7 @@ def read_sdf_file(sdf_filename):
                 sys.exit('This should have been a scan struct record.')
 
     return sdf_hdr, sdf_data
+
 
 if __name__ == "__main__":
     import argparse
