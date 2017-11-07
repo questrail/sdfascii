@@ -3,6 +3,10 @@ This file contains all notable changes to the [sdfascii][] project.
 
 ## develop (unreleased)
 
+## v0.4.0 - 2017-11-07
+- Updated dependencies.
+- Added Python 3.6 to travis.yml.
+
 ## v0.3.1 - 2015-08-20
 
 ### Added
