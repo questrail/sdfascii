@@ -3,6 +3,10 @@ This file contains all notable changes to the [sdfascii][] project.
 
 ## develop (unreleased)
 
+## v0.4.1 - 2017-11-16
+- Remove Python 2.6 and 3.3 testing in Travis-CI.
+- Remove OS X testing in Travis-CI.
+
 ## v0.4.0 - 2017-11-07
 - Updated dependencies.
 - Added Python 3.6 to travis.yml.
