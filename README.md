@@ -35,7 +35,21 @@ ASCII format, there are 4 files created with extensions of .txt, .hdr,
 
 ## Contributing
 
-[sdfascii][] is developed using [Scott Chacon][]'s [GitHub Flow][]. To
+Use the following commands to create a Python 3.9.9 virtualenv using [pyenv][]
+and [pyenv-virtualenv][], install the requirements in the virtualenv named
+`sdfascii`, and list the available [Invoke][] tasks.
+
+```bash
+$ pyenv virtualenv 3.9.9 sdfascii
+$ pyenv activate sdfascii
+$ pip install -r requirements.txt
+$ inv -l
+```
+
+
+### Submitting Pull Requests
+
+[keysight][] is developed using [Scott Chacon][]'s [GitHub Flow][]. To
 contribute, fork [sdfascii][], create a feature branch, and then submit
 a pull request.  [GitHub Flow][] is summarized as:
 
@@ -44,12 +58,14 @@ a pull request.  [GitHub Flow][] is summarized as:
   `master` (e.g., `new-oauth2-scopes`)
 - Commit to that branch locally and regularly push your work to the same
   named branch on the server
-- When you need feedback or help, or you think the branch is ready for
+- When you need feedback or help, or you think the brnach is ready for
   merging, open a [pull request][].
 - After someone else has reviewed and signed off on the feature, you can
   merge it into master.
 - Once it is merged and pushed to `master`, you can and *should* deploy
   immediately.
+
+## Testing
 
 ## License
 

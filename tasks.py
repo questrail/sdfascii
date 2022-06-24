@@ -1,19 +1,32 @@
+# -*- coding: utf-8 -*-
+# Copyright (c) 2022 The sdfascii developers. All rights reserved.
+# Project site: https://github.com/questrail/sdfascii
+# Use of this source code is governed by a MIT-style license that
+# can be found in the LICENSE.txt file for the project.
 from invoke import run, task
+from unipath import Path
 
 TESTPYPI = "https://testpypi.python.org/pypi"
+ROOT_DIR = Path(__file__).ancestor(1)
 
 
 @task
 def lint(ctx):
     """Run flake8 to lint code"""
-    run("python setup.py flake8")
+    run("python3 -m flake8")
+
+
+@task
+def freeze(ctx):
+    # pylint: disable=W0613
+    """Freeze the pip requirements using pip-chill"""
+    run(f"pip-chill > {Path(ROOT_DIR, 'requirements.txt')}")
 
 
 @task(lint)
 def test(ctx):
     """Lint, unit test, and check setup.py"""
-    run("nosetests --with-coverage --cover-package=sdfascii")
-    run("python setup.py check")
+    run("nose2")
 
 
 @task()
