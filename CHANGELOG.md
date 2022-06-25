@@ -3,6 +3,9 @@ This file contains all notable changes to the [sdfascii][] project.
 
 ## develop (unreleased)
 
+## v0.5.4 - 25-Jun-22
+- Installed twine in order to upload to pypi.
+
 ## v0.5.3 - 25-Jun-22
 - Installed build in order to upload to pypi.
 
