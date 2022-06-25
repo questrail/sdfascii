@@ -3,6 +3,9 @@ This file contains all notable changes to the [sdfascii][] project.
 
 ## develop (unreleased)
 
+## v0.5.1 - 25-Jun-22
+- Actually released to pypi.
+
 ## v0.5.0 - 24-Jun-22
 - Updated dependencies.
 
