@@ -35,6 +35,18 @@ ASCII format, there are 4 files created with extensions of .txt, .hdr,
 
 ## Contributing
 
+Contributions are welcome! To contribute please:
+
+1. Fork the repository
+2. Create a feature branch
+3. Add code and tests
+4. Pass lint and tests
+5. Submit a [pull request][]
+
+## Development Setup
+
+### Development Setup Using pyenv
+
 Use the following commands to create a Python 3.9.9 virtualenv using [pyenv][]
 and [pyenv-virtualenv][], install the requirements in the virtualenv named
 `sdfascii`, and list the available [Invoke][] tasks.
@@ -45,27 +57,6 @@ $ pyenv activate sdfascii
 $ pip install -r requirements.txt
 $ inv -l
 ```
-
-
-### Submitting Pull Requests
-
-[keysight][] is developed using [Scott Chacon][]'s [GitHub Flow][]. To
-contribute, fork [sdfascii][], create a feature branch, and then submit
-a pull request.  [GitHub Flow][] is summarized as:
-
-- Anything in the `master` branch is deployable
-- To work on something new, create a descriptively named branch off of
-  `master` (e.g., `new-oauth2-scopes`)
-- Commit to that branch locally and regularly push your work to the same
-  named branch on the server
-- When you need feedback or help, or you think the brnach is ready for
-  merging, open a [pull request][].
-- After someone else has reviewed and signed off on the feature, you can
-  merge it into master.
-- Once it is merged and pushed to `master`, you can and *should* deploy
-  immediately.
-
-## Testing
 
 ## License
 
@@ -82,7 +73,6 @@ a pull request.  [GitHub Flow][] is summarized as:
 [pull request]: https://help.github.com/articles/using-pull-requests
 [pypi ver image]: http://img.shields.io/pypi/v/sdfascii.svg
 [pypi ver link]: https://pypi.python.org/pypi/sdfascii/
-[scott chacon]: http://scottchacon.com/about.html
 [sdf guide]: http://cp.literature.agilent.com/litweb/pdf/5963-1715.pdf
 [sdfascii]: https://github.com/questrail/sdfascii
 [travis image]: http://img.shields.io/travis/questrail/sdfascii/master.svg
