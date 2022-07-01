@@ -67,10 +67,14 @@ $ inv -l
 [coveralls image]:http://img.shields.io/coveralls/questrail/sdfascii/master.svg
 [coveralls link]: https://coveralls.io/r/questrail/sdfascii
 [github flow]: http://scottchacon.com/2011/08/31/github-flow.html
+[invoke]: https://www.pyinvoke.org/
 [LICENSE.txt]: https://github.com/questrail/sdfascii/blob/master/LICENSE.txt
 [license image]: http://img.shields.io/pypi/l/sdfascii.svg
 [numpy]: http://www.numpy.org
 [pull request]: https://help.github.com/articles/using-pull-requests
+[pyenv]: https://github.com/pyenv/pyenv
+[pyenv-install]: https://github.com/pyenv/pyenv#installation
+[pyenv-virtualenv]: https://github.com/pyenv/pyenv-virtualenv
 [pypi ver image]: http://img.shields.io/pypi/v/sdfascii.svg
 [pypi ver link]: https://pypi.python.org/pypi/sdfascii/
 [sdf guide]: http://cp.literature.agilent.com/litweb/pdf/5963-1715.pdf
