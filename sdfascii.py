@@ -59,7 +59,7 @@ def _strip_nonprintable(input_bytes: bytes) -> str:
     return input_bytes.decode('utf-8', 'replace').split('\x00', 1)[0]
 
 
-def _convert_sdf_unit_to_dictionary(binary_data: bytes) -> SDFUnit:
+def _decode_sdf_unit(binary_data: bytes) -> SDFUnit:
     values = struct.unpack('>10sf8b', binary_data)
     keys = ('label', 'factor', 'mass', 'length', 'time', 'current',
             'temperature', 'luminal_intensity', 'mole',
@@ -69,7 +69,7 @@ def _convert_sdf_unit_to_dictionary(binary_data: bytes) -> SDFUnit:
     return cast(SDFUnit, unit_dict)
 
 
-def _convert_sdf_window_to_dictionary(binary_data: bytes) -> SDFWindow:
+def _decode_sdf_window(binary_data: bytes) -> SDFWindow:
     values = struct.unpack(b'>2h5f', binary_data)
     keys = ('window_type', 'correction_mode', 'bw', 'time_const',
             'trunc', 'wide_band_corr', 'narrow_band_corr')
@@ -289,10 +289,10 @@ def _decode_sdf_data_hdr(
         '>l', binary_data[60:64])
     data_hdr['total_rows'], data_hdr['total_cols'] = struct.unpack(
         '>2h', binary_data[64:68])
-    data_hdr['xunit'] = _convert_sdf_unit_to_dictionary(binary_data[68:90])
+    data_hdr['xunit'] = _decode_sdf_unit(binary_data[68:90])
     data_hdr['y_unit_valid'], = struct.unpack('>h', binary_data[90:92])
     data_hdr['y_unit_valid'] = bool(data_hdr['y_unit_valid'])
-    data_hdr['yunit'] = _convert_sdf_unit_to_dictionary(binary_data[92:114])
+    data_hdr['yunit'] = _decode_sdf_unit(binary_data[92:114])
 
     if sdf_revision == 1:
         # Decode the revision 1 stuff
@@ -348,8 +348,7 @@ def _decode_sdf_channel_hdr(record_size, sdf_revision, binary_data):
         struct.unpack(b'>12s', binary_data[40:52])[0])
     channel_hdr['serial_number'] = _strip_nonprintable(
         struct.unpack('>12s', binary_data[52:64])[0])
-    channel_hdr['window'] = _convert_sdf_window_to_dictionary(
-        binary_data[64:88])
+    channel_hdr['window'] = _decode_sdf_window(binary_data[64:88])
     coded_weight, = struct.unpack('>h', binary_data[88:90])
     weight_decoder = {0: 'No weighting', 1: 'A-weighting',
                       2: 'B-weighting', 3: 'C-weighting'}
@@ -372,8 +371,7 @@ def _decode_sdf_channel_hdr(record_size, sdf_revision, binary_data):
     channel_hdr['overloaded'] = bool(channel_hdr['overloaded'])
     channel_hdr['int_label'] = _strip_nonprintable(
         struct.unpack(b'>10s', binary_data[106:116])[0])
-    channel_hdr['eng_unit'] = _convert_sdf_unit_to_dictionary(
-        binary_data[116:138])
+    channel_hdr['eng_unit'] = _decode_sdf_unit(binary_data[116:138])
     channel_hdr['int_2_eng_unit'], = struct.unpack('>f', binary_data[138:142])
     channel_hdr['input_impedance'], = struct.unpack('>f', binary_data[142:146])
     coded_channel_attribute, = struct.unpack('>h', binary_data[146:148])
@@ -414,8 +412,7 @@ def _decode_sdf_scan_struct(record_size, sdf_revision, binary_data):
     scan_var_type_decoder = {1: 'Short', 2: 'Long', 3: 'Float',
                              4: 'Double'}
     scan_struct['scan_var_type'] = scan_var_type_decoder[coded_scan_var_type]
-    scan_struct['scan_unit'] = _convert_sdf_unit_to_dictionary(
-        binary_data[14:36])
+    scan_struct['scan_unit'] = _decode_sdf_unit(binary_data[14:36])
 
     return scan_struct
 
