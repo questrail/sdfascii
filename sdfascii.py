@@ -28,6 +28,34 @@ import numpy as np
 __version__ = '0.5.4'
 
 
+class SDFChannelHdr(TypedDict):
+    record_size: int
+    offset_unique_record: int
+    channel_label: str
+    module_id: str
+    serial_number: str
+    window: SDFWindow
+    weight: str
+    delay: float
+    range: float
+    direction: str
+    point_num: int
+    coupling: str
+    overloaded: bool
+    int_label: str
+    eng_unit: SDFUnit
+    int_2_eng_unit: float
+    input_impedance: float
+    channel_attribute: str
+    alias_protected: bool
+    digital_channel: bool
+    channel_scale: float
+    channel_offset: float
+    gate_begin: float
+    gate_end: float
+    user_delay: float
+
+
 class SDFUnit(TypedDict):
     label: str
     factor: float
@@ -390,7 +418,7 @@ def _decode_sdf_channel_hdr(record_size, sdf_revision, binary_data):
         channel_hdr['user_delay']) = struct.unpack(
             b'>5d', binary_data[152:192])
 
-    return channel_hdr
+    return cast(SDFChannelHdr, channel_hdr)
 
 
 def _decode_sdf_scan_struct(record_size, sdf_revision, binary_data):
