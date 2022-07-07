@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# Copyright (c) 2013-2022 The sdfascii developers. All rights reserved.
+# Project site: https://github.com/questrail/sdfascii
+# Use of this source code is governed by a MIT-style license that
+# can be found in the LICENSE.txt file for the project.
 '''
 sdfascii.py
 
@@ -94,12 +98,8 @@ def read_ascii_files(input_ascii_base_filename):
     ydata = np.loadtxt(ascii_ydata_filename)
 
     # Return the x and y data as a structured array
-    if six.PY2:
-        return np.core.records.fromarrays(
-            [xdata, ydata], names=b'frequency,amplitude')
-    elif six.PY3:
-        return np.core.records.fromarrays(
-            [xdata, ydata], names='frequency,amplitude')
+    return np.core.records.fromarrays(
+        [xdata, ydata], names='frequency,amplitude')
 
 
 def _decode_sdf_file_hdr(record_size, binary_data):
