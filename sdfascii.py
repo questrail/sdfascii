@@ -362,11 +362,14 @@ def _decode_sdf_vector_hdr(record_size, sdf_revision, binary_data):
     return vector_hdr
 
 
-def _decode_sdf_channel_hdr(record_size, sdf_revision, binary_data):
+def _decode_sdf_channel_hdr(
+        record_size: int,
+        sdf_revision: int,
+        binary_data: bytes) -> SDFChannelHdr:
     '''
     Decode the channel header binary data
     '''
-    channel_hdr = {}
+    channel_hdr: dict = {}
     channel_hdr['record_size'] = record_size
     (channel_hdr['offset_unique_record'],) = \
         struct.unpack('>l', binary_data[6:10])
