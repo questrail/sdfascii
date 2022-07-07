@@ -13,63 +13,78 @@ Read SDF and ASCII files created by HP/Agilent Dynamic Signal Analyzers.
 Agilent 35670A DSA.
 '''
 
-# Try to future proof code so that it's Python 3.x ready
-from __future__ import print_function
-from __future__ import unicode_literals
-from __future__ import division
-from __future__ import absolute_import
+# Future imports
+from __future__ import annotations
 
 # Standard module imports
-import datetime
+from datetime import datetime
 import struct
 import sys
+from typing import Dict, TypedDict, Union, cast
 
 # Data analysis related imports
 import numpy as np
 
-import six
-
 __version__ = '0.5.4'
 
 
-def _strip_nonprintable(input_bytes):
-    '''
-    (str) -> str
+class SDFUnit(TypedDict):
+    label: str
+    factor: float
+    mass: int
+    length: int
+    time: int
+    current: int
+    temperature: int
+    luminal_intensity: int
+    mole: int
+    plane_angle: int
 
-    Return string without nonprintable characters
 
-    Actually this take a bytes object and converts it to a string only
-    returning any character up to but not including the first instance of
-    "\x00"
-    '''
+class SDFWindow(TypedDict):
+    window_type: int
+    correction_mode: int
+    bw: float
+    time_const: float
+    trunc: float
+    wide_band_corr: float
+    narrow_band_corr: float
+
+
+def _strip_nonprintable(input_bytes: bytes) -> str:
+    r"""
+    Convert a bytes object into a string returning any character up to, but not
+    including, the first instance of \x00.
+    """
     return input_bytes.decode('utf-8', 'replace').split('\x00', 1)[0]
 
 
-def _convert_sdf_unit_to_dictionary(sdf_unit):
+def _convert_sdf_unit_to_dictionary(binary_data: bytes) -> SDFUnit:
+    values = struct.unpack('>10sf8b', binary_data)
     keys = ('label', 'factor', 'mass', 'length', 'time', 'current',
             'temperature', 'luminal_intensity', 'mole',
             'plane_angle')
-    sdf_unit_dictionary = dict(zip(keys, sdf_unit))
-    sdf_unit_dictionary['label'] = _strip_nonprintable(
-        sdf_unit_dictionary['label'])
-    return sdf_unit_dictionary
+    unit_dict = dict(zip(keys, values))
+    unit_dict['label'] = _strip_nonprintable(unit_dict['label'])
+    return cast(SDFUnit, unit_dict)
 
 
-def _convert_sdf_window_to_dictionary(sdf_window):
+def _convert_sdf_window_to_dictionary(binary_data: bytes) -> SDFWindow:
+    values = struct.unpack(b'>2h5f', binary_data)
     keys = ('window_type', 'correction_mode', 'bw', 'time_const',
             'trunc', 'wide_band_corr', 'narrow_band_corr')
-    sdf_window_dictionary = dict(zip(keys, sdf_window))
+    window_dict = dict(zip(keys, values))
     # FIXME: Add remaining window types
     window_type_decoder = {0: 'Window not applied', 1: 'Hanning',
                            2: 'Flat Top', 3: 'Uniform', 4: 'Force'}
-    sdf_window_dictionary['window_type'] = window_type_decoder[
-        sdf_window_dictionary['window_type']]
+    window_dict['window_type'] = window_type_decoder[
+        window_dict['window_type']]
     correction_mode_decoder = {0: 'Correction not applied',
                                1: 'Narrow band correction applied',
                                2: 'Wide band correction applied'}
-    sdf_window_dictionary['correction_mode'] = correction_mode_decoder[
-        sdf_window_dictionary['correction_mode']]
-    return sdf_window_dictionary
+    window_dict['correction_mode'] = correction_mode_decoder[
+        window_dict['correction_mode']]
+    return cast(SDFWindow, window_dict)
 
 
 def _read_ascii_hdr(input_hdr_filename):
@@ -102,18 +117,27 @@ def read_ascii_files(input_ascii_base_filename):
         [xdata, ydata], names='frequency,amplitude')
 
 
-def _decode_sdf_file_hdr(record_size, binary_data):
-    '''
-    * record_size is the total size of the binary_data including the
-    record_type and record_size
-    * file_hdr_binary contains all the binary data for the file header
-    including the record_type and record_size.
-    * The HP documentation lists the binary indices starting a 1, whereas
-    Python uses 0 based arrays/indices
-    '''
-    file_hdr = {}
+def _decode_sdf_file_hdr(
+        record_size: int,
+        binary_data: bytes) -> Dict[str, Union[int, str, datetime]]:
+    """Decode the header information in the SDF file.
+
+    Note: The HP documentation lists the binary indices starting a 1, whereas
+    Python uses 0 based arrays/indices.
+
+    Args:
+        record_size: An integer indicating the total size of the binary_data
+            including the record_type and record_size.
+        file_hdr_binary: The binary data for the file header including the
+            record_type and record_size.
+
+    Returns:
+        A dictionary containing the SDF header information.
+    """
+
+    file_hdr: Dict[str, Union[int, str, datetime]] = {}
     file_hdr['record_size'] = record_size
-    file_hdr['sdf_revision'], = struct.unpack(b'>h', binary_data[6:8])
+    file_hdr['sdf_revision'], = struct.unpack('>h', binary_data[6:8])
     application_code, = struct.unpack('>h', binary_data[8:10])
     application_decoder = {-1: 'HP VISTA', -2: 'HP SINE', -3: 'HP 35660A',
                            -4: 'HP 3562A, HP 3563A', -5: 'HP 3588A',
@@ -124,22 +148,22 @@ def _decode_sdf_file_hdr(record_size, binary_data):
                            9: 'HP 3569A', 10: 'HP 35670A', 11: 'HP 3587S'}
     file_hdr['application'] = application_decoder[application_code]
     msr_year, msr_month_day, msr_hour_min = struct.unpack(
-        b'>hhh', binary_data[10:16])
+        '>hhh', binary_data[10:16])
     msr_month, msr_day = divmod(msr_month_day, 100)
     msr_hour, msr_sec = divmod(msr_hour_min, 100)
-    file_hdr['measurement_start_datetime'] = datetime.datetime(
+    file_hdr['measurement_start_datetime'] = datetime(
         msr_year, msr_month, msr_day, msr_hour, msr_sec)
     file_hdr['application_version'] = _strip_nonprintable(
-        struct.unpack(b'>8s', binary_data[16:24])[0])
+        struct.unpack('>8s', binary_data[16:24])[0])
     (file_hdr['num_data_hdr_records'], file_hdr['num_vector_hdr_records'],
         file_hdr['num_channel_hdr_records'], file_hdr['num_unique_records'],
         file_hdr['num_scan_struct_records'], file_hdr['num_xdata_records']) = \
-        struct.unpack(b'>6h', binary_data[24:36])
+        struct.unpack('>6h', binary_data[24:36])
     (file_hdr['offset_data_hdr_record'], file_hdr['offset_vector_record'],
         file_hdr['offset_channel_record'], file_hdr['offset_unique_record'],
         file_hdr['offset_scan_struct_record'], file_hdr['offset_xdata_record'],
         file_hdr['offset_ydata_record']) = \
-        struct.unpack(b'>7l', binary_data[36:64])
+        struct.unpack('>7l', binary_data[36:64])
 
     if file_hdr['sdf_revision'] == 3:
         # Continue reading bytes 65-80 if this is SDF ver. 3
@@ -149,11 +173,13 @@ def _decode_sdf_file_hdr(record_size, binary_data):
     return file_hdr
 
 
-def _decode_sdf_meas_hdr(record_size, sdf_revision, binary_data):
+def _decode_sdf_meas_hdr(record_size: int,
+                         sdf_revision: int,
+                         binary_data: bytes) -> Dict[str, Union[float, str]]:
     '''
     Decode the measurement header binary data
     '''
-    meas_hdr = {}
+    meas_hdr: Dict[str, Union[float, str]] = {}
     record_size_from_binary_data = struct.unpack(b'>l', binary_data[2:6])[0]
     if record_size != record_size_from_binary_data:
         sys.exit('Bad record size in SDF_MEAS_HDR')
@@ -212,7 +238,10 @@ def _decode_sdf_meas_hdr(record_size, sdf_revision, binary_data):
     return meas_hdr
 
 
-def _decode_sdf_data_hdr(record_size, sdf_revision, binary_data):
+def _decode_sdf_data_hdr(
+        record_size,
+        sdf_revision,
+        binary_data):
     '''
     Decode the data header binary data
     '''
@@ -260,12 +289,10 @@ def _decode_sdf_data_hdr(record_size, sdf_revision, binary_data):
         '>l', binary_data[60:64])
     data_hdr['total_rows'], data_hdr['total_cols'] = struct.unpack(
         '>2h', binary_data[64:68])
-    xunit = struct.unpack(b'>10sf8b', binary_data[68:90])
-    data_hdr['xunit'] = _convert_sdf_unit_to_dictionary(xunit)
+    data_hdr['xunit'] = _convert_sdf_unit_to_dictionary(binary_data[68:90])
     data_hdr['y_unit_valid'], = struct.unpack('>h', binary_data[90:92])
     data_hdr['y_unit_valid'] = bool(data_hdr['y_unit_valid'])
-    yunit = struct.unpack('>10sf8b', binary_data[92:114])
-    data_hdr['yunit'] = _convert_sdf_unit_to_dictionary(yunit)
+    data_hdr['yunit'] = _convert_sdf_unit_to_dictionary(binary_data[92:114])
 
     if sdf_revision == 1:
         # Decode the revision 1 stuff
@@ -321,8 +348,8 @@ def _decode_sdf_channel_hdr(record_size, sdf_revision, binary_data):
         struct.unpack(b'>12s', binary_data[40:52])[0])
     channel_hdr['serial_number'] = _strip_nonprintable(
         struct.unpack('>12s', binary_data[52:64])[0])
-    window = struct.unpack(b'>2h5f', binary_data[64:88])
-    channel_hdr['window'] = _convert_sdf_window_to_dictionary(window)
+    channel_hdr['window'] = _convert_sdf_window_to_dictionary(
+        binary_data[64:88])
     coded_weight, = struct.unpack('>h', binary_data[88:90])
     weight_decoder = {0: 'No weighting', 1: 'A-weighting',
                       2: 'B-weighting', 3: 'C-weighting'}
@@ -345,8 +372,8 @@ def _decode_sdf_channel_hdr(record_size, sdf_revision, binary_data):
     channel_hdr['overloaded'] = bool(channel_hdr['overloaded'])
     channel_hdr['int_label'] = _strip_nonprintable(
         struct.unpack(b'>10s', binary_data[106:116])[0])
-    eng_unit = struct.unpack('>10sf8b', binary_data[116:138])
-    channel_hdr['eng_unit'] = _convert_sdf_unit_to_dictionary(eng_unit)
+    channel_hdr['eng_unit'] = _convert_sdf_unit_to_dictionary(
+        binary_data[116:138])
     channel_hdr['int_2_eng_unit'], = struct.unpack('>f', binary_data[138:142])
     channel_hdr['input_impedance'], = struct.unpack('>f', binary_data[142:146])
     coded_channel_attribute, = struct.unpack('>h', binary_data[146:148])
@@ -387,8 +414,8 @@ def _decode_sdf_scan_struct(record_size, sdf_revision, binary_data):
     scan_var_type_decoder = {1: 'Short', 2: 'Long', 3: 'Float',
                              4: 'Double'}
     scan_struct['scan_var_type'] = scan_var_type_decoder[coded_scan_var_type]
-    scan_unit = struct.unpack('>10sf8b', binary_data[14:36])
-    scan_struct['scan_unit'] = _convert_sdf_unit_to_dictionary(scan_unit)
+    scan_struct['scan_unit'] = _convert_sdf_unit_to_dictionary(
+        binary_data[14:36])
 
     return scan_struct
 
