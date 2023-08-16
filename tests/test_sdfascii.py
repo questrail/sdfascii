@@ -228,10 +228,10 @@ class TestReadingSDFFormat(unittest.TestCase):
         self.assertFalse(self.sdf_hdr['data_hdr'][0]['y_is_normalized'])
 
     def test_sdf_data_hdr_y_is_power_data(self):
-        self.assertFalse(self.sdf_hdr['data_hdr'][0]['y_is_power_data'])
+        self.assertTrue(self.sdf_hdr['data_hdr'][0]['y_is_power_data'])
 
     def test_sdf_data_hdr_y_is_valid(self):
-        self.assertFalse(self.sdf_hdr['data_hdr'][0]['y_is_valid'])
+        self.assertTrue(self.sdf_hdr['data_hdr'][0]['y_is_valid'])
 
     def test_sdf_data_hdr_first_vector_record_num(self):
         self.assertEqual(
