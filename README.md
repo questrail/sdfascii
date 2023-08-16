@@ -52,8 +52,9 @@ and [pyenv-virtualenv][], install the requirements in the virtualenv named
 `sdfascii`, and list the available [Invoke][] tasks.
 
 ```bash
-$ pyenv virtualenv 3.9.9 sdfascii
+$ pyenv virtualenv 3.11 sdfascii
 $ pyenv activate sdfascii
+$ pip install --upgrade pip
 $ pip install -r requirements.txt
 $ inv -l
 ```
