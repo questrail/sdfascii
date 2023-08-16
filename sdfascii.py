@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Copyright (c) 2013-2022 The sdfascii developers. All rights reserved.
+# Copyright (c) 2013-2023 The sdfascii developers. All rights reserved.
 # Project site: https://github.com/questrail/sdfascii
 # Use of this source code is governed by a MIT-style license that
 # can be found in the LICENSE.txt file for the project.
@@ -20,12 +20,136 @@ from __future__ import annotations
 from datetime import datetime
 import struct
 import sys
-from typing import Dict, TypedDict, Union, cast
+from typing import Any, Dict, TypedDict, Union, cast
 
 # Data analysis related imports
 import numpy as np
+# import numpy.typing as npt
 
 __version__ = '0.5.4'
+
+
+FILE_HDR_RECORD_TYPE = 10
+MEAS_HDR_RECORD_TYPE = 11
+DATA_HDR_RECORD_TYPE = 12
+VECTOR_HDR_RECORD_TYPE = 13
+CHANNEL_HDR_RECORD_TYPE = 14
+SCAN_STRUCT_RECORD_TYPE = 15
+XDATA_HDR_RECORD_TYPE = 16
+YDATA_HDR_RECORD_TYPE = 17
+SCAN_BIG_RECORD_TYPE = 18
+SCAN_VAR_RECORD_TYPE = 19
+COMMENT_HDR_RECORD_TYPE = 20
+
+
+class SDFFileHdrBase(TypedDict):
+    record_size: int
+    sdf_revision: int
+    application: str
+    measurement_start_datetime: datetime
+    application_version: str
+    num_data_hdr_records: int
+    num_vector_hdr_records: int
+    num_channel_hdr_records: int
+    num_unique_records: int
+    num_scan_struct_records: int
+    num_xdata_records: int
+    offset_data_hdr_record: int
+    offset_vector_record: int
+    offset_channel_record: int
+    offset_unique_record: int
+    offset_scan_struct_record: int
+    offset_xdata_record: int
+    offset_ydata_record: int
+
+
+class SDFFileHdrV1(SDFFileHdrBase):
+    pass
+
+
+class SDFFileHdrV2(SDFFileHdrBase):
+    pass
+
+
+class SDFFileHdrV3(SDFFileHdrBase):
+    pass
+
+
+class SDFMeasHdrBase(TypedDict):
+    record_size: int
+    offset_unique_record: int
+    block_size: int
+    zoom_mode_on: bool
+    average_type: str
+    average_num: int
+    pct_overlap: float
+    meas_title: str
+    center_freq: float
+    span_freq: float
+    sweep_freq: float
+    meas_type: str
+    real_time: str
+    detection: str
+    sweep_time: float
+
+
+class SDFMeasHdrV1(SDFMeasHdrBase):
+    pass
+
+
+class SDFMeasHdrV2(SDFMeasHdrBase):
+    start_freq_index: int
+    stop_freq_index: int
+
+
+class SDFMeasHdrV3(SDFMeasHdrBase):
+    start_freq_index: int
+    stop_freq_index: int
+
+
+class SDFDataHdrBase(TypedDict):
+    record_size: int
+    offset_unique_record: int
+    data_title: str
+    domain: str
+    data_type: str
+    x_resolution_type: str
+    x_data_type: str
+    x_per_point: int
+    y_data_type: str
+    y_per_point: int
+    y_is_complex: bool
+    y_is_normalized: bool
+    y_is_power_data: bool
+    y_is_valid: bool
+    first_vector_record_num: int
+    total_rows: int
+    xunit: SDFUnit
+    y_unit_valid: bool
+    yunit: SDFUnit
+    abscissa_first_x: float
+    abscissa_delta_x: float
+
+
+class SDFDataHdrV1(SDFDataHdrBase):
+    pass
+
+
+class SDFDataHdrV2(SDFDataHdrBase):
+    scan_data: bool
+    window_applied: bool
+
+
+class SDFDataHdrV3(SDFDataHdrBase):
+    scan_data: bool
+    window_applied: bool
+
+
+class SDFVectorHdr(TypedDict):
+    record_size: int
+    offset_unique_record: int
+    channel_record: int
+    channel_power_48x: int
 
 
 class SDFChannelHdr(TypedDict):
@@ -56,6 +180,15 @@ class SDFChannelHdr(TypedDict):
     user_delay: float
 
 
+class SDFScanStruct(TypedDict):
+    record_size: int
+    num_of_scans: int
+    last_scan_index: int
+    scan_type: str
+    scan_var_type: str
+    scan_unit: SDFUnit
+
+
 class SDFUnit(TypedDict):
     label: str
     factor: float
@@ -77,6 +210,36 @@ class SDFWindow(TypedDict):
     trunc: float
     wide_band_corr: float
     narrow_band_corr: float
+
+
+class SDFHdrV1(TypedDict, total=False):
+    valid_file_identifier: bool
+    file_hdr: SDFFileHdrV1
+    meas_hdr: SDFMeasHdrV1
+    data_hdr: list[SDFDataHdrV1]
+    vector_hdr: list[SDFVectorHdr]
+    channel_hdr: list[SDFChannelHdr]
+    scan_struct: SDFScanStruct
+
+
+class SDFHdrV2(TypedDict, total=False):
+    valid_file_identifier: bool
+    file_hdr: SDFFileHdrV2
+    meas_hdr: SDFMeasHdrV2
+    data_hdr: list[SDFDataHdrV2]
+    vector_hdr: list[SDFVectorHdr]
+    channel_hdr: list[SDFChannelHdr]
+    scan_struct: SDFScanStruct
+
+
+class SDFHdrV3(TypedDict, total=False):
+    valid_file_identifier: bool
+    file_hdr: SDFFileHdrV3
+    meas_hdr: SDFMeasHdrV3
+    data_hdr: list[SDFDataHdrV3]
+    vector_hdr: list[SDFVectorHdr]
+    channel_hdr: list[SDFChannelHdr]
+    scan_struct: SDFScanStruct
 
 
 def _strip_nonprintable(input_bytes: bytes) -> str:
@@ -115,22 +278,6 @@ def _decode_sdf_window(binary_data: bytes) -> SDFWindow:
     return cast(SDFWindow, window_dict)
 
 
-def _read_ascii_hdr(input_hdr_filename):
-    pass
-
-
-def _read_ascii_ydata(input_txt_filename):
-    pass
-
-
-def _read_ascii_xdata(input_x_filename):
-    pass
-
-
-def _read_ascii_zdata(input_z_filename):
-    pass
-
-
 def read_ascii_files(input_ascii_base_filename):
     # Create the four filenames
     ascii_ydata_filename = input_ascii_base_filename + '.TXT'
@@ -147,7 +294,7 @@ def read_ascii_files(input_ascii_base_filename):
 
 def _decode_sdf_file_hdr(
         record_size: int,
-        binary_data: bytes) -> Dict[str, Union[int, str, datetime]]:
+        binary_data: bytes) -> SDFFileHdrV1 | SDFFileHdrV2 | SDFFileHdrV3:
     """Decode the header information in the SDF file.
 
     Note: The HP documentation lists the binary indices starting a 1, whereas
@@ -193,22 +340,31 @@ def _decode_sdf_file_hdr(
         file_hdr['offset_ydata_record']) = \
         struct.unpack('>7l', binary_data[36:64])
 
-    if file_hdr['sdf_revision'] == 3:
+    if file_hdr['sdf_revision'] == 1:
+        temp_file_hdr = cast(SDFFileHdrV1, file_hdr)
+    elif file_hdr['sdf_revision'] == 2:
+        temp_file_hdr = cast(SDFFileHdrV2, file_hdr)
+    elif file_hdr['sdf_revision'] == 3:
         # Continue reading bytes 65-80 if this is SDF ver. 3
         # FIXME: Need to add the code for SDF ver. 3 in the future.
-        pass
+        temp_file_hdr = cast(SDFFileHdrV3, file_hdr)
+    else:
+        # SDF revision not recognized
+        sys.exit('Did not recognize SDF revision in file header.')
 
-    return file_hdr
+    return temp_file_hdr
 
 
-def _decode_sdf_meas_hdr(record_size: int,
-                         sdf_revision: int,
-                         binary_data: bytes) -> Dict[str, Union[float, str]]:
+def _decode_sdf_meas_hdr(
+        record_size: int,
+        sdf_revision: int,
+        binary_data: bytes) -> SDFMeasHdrV1 | SDFMeasHdrV2 | SDFMeasHdrV3:
     '''
     Decode the measurement header binary data
     '''
-    meas_hdr: Dict[str, Union[float, str]] = {}
-    record_size_from_binary_data = struct.unpack(b'>l', binary_data[2:6])[0]
+    meas_hdr: dict = {}
+    # FIXME(mdr): Check that the record_type is 11 (short int 0:2).
+    record_size_from_binary_data = struct.unpack('>l', binary_data[2:6])[0]
     if record_size != record_size_from_binary_data:
         sys.exit('Bad record size in SDF_MEAS_HDR')
     meas_hdr['record_size'] = record_size
@@ -250,30 +406,31 @@ def _decode_sdf_meas_hdr(record_size: int,
     if sdf_revision == 1:
         # Decode the revision 1 stuff
         # FIXME: Add rev 1 stuff later
-        pass
+        temp_meas_hdr = cast(SDFMeasHdrV1, meas_hdr)
     elif sdf_revision == 2:
         # Decode the revision 2 stuff
         (meas_hdr['start_freq_index'], meas_hdr['stop_freq_index']) = \
             struct.unpack(b'>2h', binary_data[24:28])
+        temp_meas_hdr = cast(SDFMeasHdrV2, meas_hdr)
     elif sdf_revision == 3:
         # Decode the revision 3 related stuff
         # FIXME: Add rev 3 stuff later
-        pass
+        temp_meas_hdr = cast(SDFMeasHdrV3, meas_hdr)
     else:
         # SDF revision not recognized
-        sys.exit('Did not recognize SDF revision')
+        sys.exit('Did not recognize SDF revision passed to meas hdr.')
 
-    return meas_hdr
+    return temp_meas_hdr
 
 
 def _decode_sdf_data_hdr(
-        record_size,
-        sdf_revision,
-        binary_data):
+        record_size: int,
+        sdf_revision: int,
+        binary_data: bytes) -> Union[SDFDataHdrV1, SDFDataHdrV2]:
     '''
     Decode the data header binary data
     '''
-    data_hdr = {}
+    data_hdr: dict = {}
     data_hdr['record_size'] = record_size
     (data_hdr['offset_unique_record'],) = \
         struct.unpack('>1l', binary_data[6:10])
@@ -288,7 +445,14 @@ def _decode_sdf_data_hdr(
     # FIXME: Add more data_type codes
     data_type_decoder = {-99: 'Unknown', 0: 'Time',
                          1: 'Linear spectrum',
-                         2: 'Auto-power spectrum'}
+                         2: 'Auto-power spectrum',
+                         3: 'Cross-power spectrum',
+                         4: 'Frequency response',
+                         5: 'Auto-correlation',
+                         6: 'Cross-correlation',
+                         7: 'Impulse response',
+                         8: 'Ordinary coherence',
+                         }
     data_hdr['data_type'] = data_type_decoder[coded_data_type]
     coded_x_resolution_type, = struct.unpack('>h', binary_data[42:44])
     x_resolution_type_decoder = {0: 'Linear', 1: 'Logarithmic',
@@ -308,11 +472,11 @@ def _decode_sdf_data_hdr(
     data_hdr['y_is_complex'], = struct.unpack('>h', binary_data[52:54])
     data_hdr['y_is_complex'] = bool(data_hdr['y_is_complex'])
     data_hdr['y_is_normalized'], = struct.unpack('>h', binary_data[54:56])
-    data_hdr['y_is_normalized'] = bool(data_hdr['y_is_complex'])
+    data_hdr['y_is_normalized'] = bool(data_hdr['y_is_normalized'])
     data_hdr['y_is_power_data'], = struct.unpack('>h', binary_data[56:58])
-    data_hdr['y_is_power_data'] = bool(data_hdr['y_is_complex'])
+    data_hdr['y_is_power_data'] = bool(data_hdr['y_is_power_data'])
     data_hdr['y_is_valid'], = struct.unpack('>h', binary_data[58:60])
-    data_hdr['y_is_valid'] = bool(data_hdr['y_is_complex'])
+    data_hdr['y_is_valid'] = bool(data_hdr['y_is_valid'])
     data_hdr['first_vector_record_num'], = struct.unpack(
         '>l', binary_data[60:64])
     data_hdr['total_rows'], data_hdr['total_cols'] = struct.unpack(
@@ -327,6 +491,7 @@ def _decode_sdf_data_hdr(
         # FIXME: Add rev 1 stuff later
         (data_hdr['abscissa_first_x'], data_hdr['abscissa_delta_x']) = \
             struct.unpack('>2f', binary_data[34:42])
+        temp_data_hdr = cast(SDFDataHdrV1, data_hdr)
     elif sdf_revision == 2:
         # Decode the revision 2 stuff
         (data_hdr['num_points'], data_hdr['last_valid_index']) = \
@@ -337,6 +502,7 @@ def _decode_sdf_data_hdr(
         data_hdr['scan_data'] = bool(data_hdr['scan_data'])
         data_hdr['window_applied'], = struct.unpack('>h', binary_data[132:134])
         data_hdr['window_applied'] = bool(data_hdr['window_applied'])
+        temp_data_hdr = cast(SDFDataHdrV2, data_hdr)
     elif sdf_revision == 3:
         # Decode the revision 3 related stuff
         # FIXME: Add rev 3 stuff later
@@ -345,30 +511,32 @@ def _decode_sdf_data_hdr(
         # SDF revision not recognized
         sys.exit('Did not recognize SDF revision')
 
-    return data_hdr
+    return temp_data_hdr
 
 
-def _decode_sdf_vector_hdr(record_size, sdf_revision, binary_data):
+def _decode_sdf_vector_hdr(
+        record_size: int,
+        sdf_revision: int,
+        binary_data: bytes) -> SDFVectorHdr:
     '''
     Decode the vector header binary data
     '''
-    vector_hdr = {}
+    vector_hdr: dict = {}
     vector_hdr['record_size'] = record_size
     (vector_hdr['offset_unique_record'],) = \
         struct.unpack('>l', binary_data[6:10])
     vector_hdr['channel_record'] = struct.unpack('>2h', binary_data[10:14])
     vector_hdr['channel_power_48x'] = struct.unpack('>2h', binary_data[14:18])
 
-    return vector_hdr
+    return cast(SDFVectorHdr, vector_hdr)
 
 
 def _decode_sdf_channel_hdr(
         record_size: int,
         sdf_revision: int,
         binary_data: bytes) -> SDFChannelHdr:
-    '''
-    Decode the channel header binary data
-    '''
+    """Decode the channel header binary data to a dictionary.
+    """
     channel_hdr: dict = {}
     channel_hdr['record_size'] = record_size
     (channel_hdr['offset_unique_record'],) = \
@@ -424,11 +592,13 @@ def _decode_sdf_channel_hdr(
     return cast(SDFChannelHdr, channel_hdr)
 
 
-def _decode_sdf_scan_struct(record_size, sdf_revision, binary_data):
-    '''
-    Decode the channel header binary data
-    '''
-    scan_struct = {}
+def _decode_sdf_scan_struct(
+        record_size: int,
+        sdf_revision: int,
+        binary_data: bytes) -> SDFScanStruct:
+    """Decode the scan structure binary data to a dictionary.
+    """
+    scan_struct: dict = {}
     scan_struct['record_size'] = record_size
     scan_struct['num_of_scans'], = struct.unpack('>h', binary_data[6:8])
     scan_struct['last_scan_index'], = struct.unpack('>h', binary_data[8:10])
@@ -445,22 +615,27 @@ def _decode_sdf_scan_struct(record_size, sdf_revision, binary_data):
     scan_struct['scan_var_type'] = scan_var_type_decoder[coded_scan_var_type]
     scan_struct['scan_unit'] = _decode_sdf_unit(binary_data[14:36])
 
-    return scan_struct
+    return cast(SDFScanStruct, scan_struct)
 
 
-def read_sdf_file(sdf_filename):
-    '''
-    Read the binary SDF file.
+def read_sdf_file(sdf_filename: str) -> tuple[Any, Any]:
+    """Read the binary SDF file into a dictionary.
 
-    The SDF format is described in Appendix B of the Standard
-    Data Format Utilities User's Guide.
+    The SDF format is described in Appendix B of the Standard Data Format
+    Utilities User's Guide. There are three different versions of the SDF file
+    format.
 
-    There are three different versions of SDF.
+    Args:
+        sdf_filename: A string containing the SDF filename to be read.
 
-    '''
-    sdf_hdr = {}
+    Returns:
+        A tuple containing a dictionary of the header information and a numpy
+            array containing the data.
+    """
+    sdf_hdr: dict = {}
     sdf_hdr['valid_file_identifier'] = False
-    sdf_hdr['channel_hdr'] = []  # There are 0 or more channel header records
+    # There are zero or more channel header records.
+    sdf_hdr['channel_hdr'] = []
 
     with open(sdf_filename, 'rb') as sdf_file:
         # Read SDF file_identfication
@@ -469,7 +644,7 @@ def read_sdf_file(sdf_filename):
             sdf_hdr['valid_file_identifier'] = True
         else:
             # Didn't find a valid file identifer, so bail out
-            sys.exit('Invalid file identifier: {}'.format(file_identifier))
+            sys.exit(f'Invalid file identifier: {file_identifier!r}')
 
         # Determine record type (short) and record size (long)
         # Every record has these two special fields at the start
@@ -480,7 +655,7 @@ def read_sdf_file(sdf_filename):
             record_type_size_format,
             sdf_file.read(struct.calcsize(
                 record_type_size_format.encode())))
-        if file_hdr_record_type == 10:
+        if file_hdr_record_type == FILE_HDR_RECORD_TYPE:
             # Found the file header record
             # Process the entire file header record including the record type
             # (short) and record size (long)
@@ -496,7 +671,7 @@ def read_sdf_file(sdf_filename):
         meas_hdr_record_type, meas_hdr_record_size = struct.unpack(
             record_type_size_format,
             sdf_file.read(struct.calcsize(record_type_size_format)))
-        if meas_hdr_record_type == 11:
+        if meas_hdr_record_type == MEAS_HDR_RECORD_TYPE:
             # Found the measurement header record
             sdf_file.seek(sdf_file.tell() -
                           struct.calcsize(record_type_size_format))
@@ -520,7 +695,7 @@ def read_sdf_file(sdf_filename):
             data_hdr_record_type, data_hdr_record_size = struct.unpack(
                 record_type_size_format,
                 sdf_file.read(struct.calcsize(record_type_size_format)))
-            if data_hdr_record_type == 12:
+            if data_hdr_record_type == DATA_HDR_RECORD_TYPE:
                 # This is a data header record
                 sdf_file.seek(sdf_file.tell() -
                               struct.calcsize(record_type_size_format))
@@ -545,7 +720,7 @@ def read_sdf_file(sdf_filename):
             vector_hdr_record_type, vector_hdr_record_size = struct.unpack(
                 record_type_size_format,
                 sdf_file.read(struct.calcsize(record_type_size_format)))
-            if vector_hdr_record_type == 13:
+            if vector_hdr_record_type == VECTOR_HDR_RECORD_TYPE:
                 # This is a vector header record
                 # Backup and read all of the vector header record including
                 # the record type and record size
@@ -571,7 +746,7 @@ def read_sdf_file(sdf_filename):
             channel_hdr_record_type, channel_hdr_record_size = struct.unpack(
                 record_type_size_format,
                 sdf_file.read(struct.calcsize(record_type_size_format)))
-            if channel_hdr_record_type == 14:
+            if channel_hdr_record_type == CHANNEL_HDR_RECORD_TYPE:
                 # This is a channel header record
                 # Backup and read all of the channel header record including
                 # the record type and record size
@@ -596,7 +771,7 @@ def read_sdf_file(sdf_filename):
             scan_struct_record_type, scan_struct_record_size = struct.unpack(
                 record_type_size_format,
                 sdf_file.read(struct.calcsize(record_type_size_format)))
-            if scan_struct_record_type == 15:
+            if scan_struct_record_type == SCAN_STRUCT_RECORD_TYPE:
                 # This is a channel header record
                 # Backup and read all of the channel header record including
                 # the record type and record size
@@ -618,7 +793,7 @@ def read_sdf_file(sdf_filename):
             yaxis_data_record_type, yaxis_data_record_size = struct.unpack(
                 record_type_size_format,
                 sdf_file.read(struct.calcsize(record_type_size_format)))
-            if yaxis_data_record_type == 17:
+            if yaxis_data_record_type == YDATA_HDR_RECORD_TYPE:
                 # This is a y-axis data record
                 sdf_data = np.fromfile(
                     sdf_file, '>f',
