@@ -737,11 +737,10 @@ def read_sdf_file(sdf_filename: str) -> tuple[Any, Any]:
     with open(sdf_filename, 'rb') as sdf_file:
         # Read SDF file_identfication
         file_identifier = sdf_file.read(2)
-        if file_identifier == b'B\x00':
-            sdf_hdr['valid_file_identifier'] = True
-        else:
+        if file_identifier != b'B\x00':
             # Didn't find a valid file identifer, so bail out
             sys.exit(f'Invalid file identifier: {file_identifier!r}')
+        sdf_hdr['valid_file_identifier'] = True
 
         # Determine record type (short) and record size (long)
         # Every record has these two special fields at the start
@@ -752,32 +751,32 @@ def read_sdf_file(sdf_filename: str) -> tuple[Any, Any]:
             record_type_size_format,
             sdf_file.read(struct.calcsize(
                 record_type_size_format.encode())))
-        if file_hdr_record_type == FILE_HDR_RECORD_TYPE:
-            # Found the file header record
-            # Process the entire file header record including the record type
-            # (short) and record size (long)
-            sdf_file.seek(sdf_file.tell() -
-                          struct.calcsize(record_type_size_format))
-            sdf_hdr['file_hdr'] = _decode_sdf_file_hdr(
-                file_hdr_record_size,
-                sdf_file.read(file_hdr_record_size))
-        else:
+        # Confirm this is a file header record.
+        if file_hdr_record_type != FILE_HDR_RECORD_TYPE:
             sys.exit('Error processing SDF file; expected file header')
+        # Found the file header record
+        # Process the entire file header record including the record type
+        # (short) and record size (long)
+        sdf_file.seek(sdf_file.tell() -
+                      struct.calcsize(record_type_size_format))
+        sdf_hdr['file_hdr'] = _decode_sdf_file_hdr(
+            file_hdr_record_size,
+            sdf_file.read(file_hdr_record_size))
 
         # Process the measurement header record
         meas_hdr_record_type, meas_hdr_record_size = struct.unpack(
             record_type_size_format,
             sdf_file.read(struct.calcsize(record_type_size_format)))
-        if meas_hdr_record_type == MEAS_HDR_RECORD_TYPE:
-            # Found the measurement header record
-            sdf_file.seek(sdf_file.tell() -
-                          struct.calcsize(record_type_size_format))
-            sdf_hdr['meas_hdr'] = _decode_sdf_meas_hdr(
-                meas_hdr_record_size,
-                sdf_hdr['file_hdr']['sdf_revision'],
-                sdf_file.read(meas_hdr_record_size))
-        else:
+        # Confirm this is a measurement header record.
+        if meas_hdr_record_type != MEAS_HDR_RECORD_TYPE:
             sys.exit('Error processing SDF file; expected measurement header')
+        # Found the measurement header record
+        sdf_file.seek(sdf_file.tell() -
+                      struct.calcsize(record_type_size_format))
+        sdf_hdr['meas_hdr'] = _decode_sdf_meas_hdr(
+            meas_hdr_record_size,
+            sdf_hdr['file_hdr']['sdf_revision'],
+            sdf_file.read(meas_hdr_record_size))
 
         # Decode the data header records
         sdf_hdr['data_hdr'] = []
@@ -792,17 +791,17 @@ def read_sdf_file(sdf_filename: str) -> tuple[Any, Any]:
             data_hdr_record_type, data_hdr_record_size = struct.unpack(
                 record_type_size_format,
                 sdf_file.read(struct.calcsize(record_type_size_format)))
-            if data_hdr_record_type == DATA_HDR_RECORD_TYPE:
-                # This is a data header record
-                sdf_file.seek(sdf_file.tell() -
-                              struct.calcsize(record_type_size_format))
-                sdf_hdr['data_hdr'].append(
-                    _decode_sdf_data_hdr(
-                        data_hdr_record_size,
-                        sdf_hdr['file_hdr']['sdf_revision'],
-                        sdf_file.read(data_hdr_record_size)))
-            else:
+            # Confirm this is a data header record.
+            if data_hdr_record_type != DATA_HDR_RECORD_TYPE:
                 sys.exit('This should have been a data header record.')
+            # This is a data header record
+            sdf_file.seek(sdf_file.tell() -
+                          struct.calcsize(record_type_size_format))
+            sdf_hdr['data_hdr'].append(
+                _decode_sdf_data_hdr(
+                    data_hdr_record_size,
+                    sdf_hdr['file_hdr']['sdf_revision'],
+                    sdf_file.read(data_hdr_record_size)))
 
         # Decode the vector header records
         sdf_hdr['vector_hdr'] = []
@@ -814,21 +813,22 @@ def read_sdf_file(sdf_filename: str) -> tuple[Any, Any]:
             sdf_file.seek(sdf_hdr['file_hdr']['offset_vector_record'] +
                           vector_hdr_record_index * vector_hdr_record_size)
             # Read the record type and size
+            # The record type should be 13 and the size should be 18 bytes
             vector_hdr_record_type, vector_hdr_record_size = struct.unpack(
                 record_type_size_format,
                 sdf_file.read(struct.calcsize(record_type_size_format)))
-            if vector_hdr_record_type == VECTOR_HDR_RECORD_TYPE:
-                # This is a vector header record
-                # Backup and read all of the vector header record including
-                # the record type and record size
-                sdf_file.seek(sdf_file.tell() -
-                              struct.calcsize(record_type_size_format))
-                sdf_hdr['vector_hdr'].append(_decode_sdf_vector_hdr(
-                    vector_hdr_record_size,
-                    sdf_hdr['file_hdr']['sdf_revision'],
-                    sdf_file.read(vector_hdr_record_size)))
-            else:
+            # Confirm this is a vector header record.
+            if vector_hdr_record_type != VECTOR_HDR_RECORD_TYPE:
                 sys.exit('This should have been a vector header record.')
+            # This is a vector header record
+            # Backup and read all of the vector header record including
+            # the record type and record size
+            sdf_file.seek(sdf_file.tell() -
+                          struct.calcsize(record_type_size_format))
+            sdf_hdr['vector_hdr'].append(_decode_sdf_vector_hdr(
+                vector_hdr_record_size,
+                sdf_hdr['file_hdr']['sdf_revision'],
+                sdf_file.read(vector_hdr_record_size)))
 
         # Decode the channel header records
         sdf_hdr['channel_hdr'] = []
@@ -843,18 +843,18 @@ def read_sdf_file(sdf_filename: str) -> tuple[Any, Any]:
             channel_hdr_record_type, channel_hdr_record_size = struct.unpack(
                 record_type_size_format,
                 sdf_file.read(struct.calcsize(record_type_size_format)))
-            if channel_hdr_record_type == CHANNEL_HDR_RECORD_TYPE:
-                # This is a channel header record
-                # Backup and read all of the channel header record including
-                # the record type and record size
-                sdf_file.seek(sdf_file.tell() -
-                              struct.calcsize(record_type_size_format))
-                sdf_hdr['channel_hdr'].append(_decode_sdf_channel_hdr(
-                    channel_hdr_record_size,
-                    sdf_hdr['file_hdr']['sdf_revision'],
-                    sdf_file.read(channel_hdr_record_size)))
-            else:
+            # Confirm this is a channel header record.
+            if channel_hdr_record_type != CHANNEL_HDR_RECORD_TYPE:
                 sys.exit('This should have been a channel header record.')
+            # This is a channel header record
+            # Backup and read all of the channel header record including
+            # the record type and record size
+            sdf_file.seek(sdf_file.tell() -
+                          struct.calcsize(record_type_size_format))
+            sdf_hdr['channel_hdr'].append(_decode_sdf_channel_hdr(
+                channel_hdr_record_size,
+                sdf_hdr['file_hdr']['sdf_revision'],
+                sdf_file.read(channel_hdr_record_size)))
 
         # Decode the scan structure records
         # Initialize record size to 0 until we know the answer
@@ -868,21 +868,23 @@ def read_sdf_file(sdf_filename: str) -> tuple[Any, Any]:
             scan_struct_record_type, scan_struct_record_size = struct.unpack(
                 record_type_size_format,
                 sdf_file.read(struct.calcsize(record_type_size_format)))
-            if scan_struct_record_type == SCAN_STRUCT_RECORD_TYPE:
-                # This is a channel header record
-                # Backup and read all of the channel header record including
-                # the record type and record size
-                sdf_file.seek(sdf_file.tell() -
-                              struct.calcsize(record_type_size_format))
-                sdf_hdr['scan_struct'] = _decode_sdf_scan_struct(
-                    scan_struct_record_size,
-                    sdf_hdr['file_hdr']['sdf_revision'],
-                    sdf_file.read(scan_struct_record_size))
-            else:
+            # Confirm this is a channel header record.
+            if scan_struct_record_type != SCAN_STRUCT_RECORD_TYPE:
                 sys.exit('This should have been a scan struct record.')
+            # This is a channel header record
+            # Backup and read all of the channel header record including
+            # the record type and record size
+            sdf_file.seek(sdf_file.tell() -
+                          struct.calcsize(record_type_size_format))
+            sdf_hdr['scan_struct'] = _decode_sdf_scan_struct(
+                scan_struct_record_size,
+                sdf_hdr['file_hdr']['sdf_revision'],
+                sdf_file.read(scan_struct_record_size))
 
+        # -------------------------------------------------------------------- #
         # Decode the Y-axis data records
         # The y-data offset will be -1 if there is no y-data
+        # -------------------------------------------------------------------- #
         if sdf_hdr['file_hdr']['offset_ydata_record'] >= 0:
             # Move to the start of the y-axis data record
             sdf_file.seek(sdf_hdr['file_hdr']['offset_ydata_record'])
