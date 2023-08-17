@@ -265,9 +265,25 @@ def _decode_sdf_window(binary_data: bytes) -> SDFWindow:
     keys = ('window_type', 'correction_mode', 'bw', 'time_const',
             'trunc', 'wide_band_corr', 'narrow_band_corr')
     window_dict = dict(zip(keys, values))
-    # FIXME: Add remaining window types
-    window_type_decoder = {0: 'Window not applied', 1: 'Hanning',
-                           2: 'Flat Top', 3: 'Uniform', 4: 'Force'}
+    window_type_decoder = {0: 'Window not applied',
+                           1: 'Hanning',
+                           2: 'Flat Top',
+                           3: 'Uniform',
+                           4: 'Force',
+                           5: 'Response',
+                           6: 'user-defined',
+                           7: 'Hamming',
+                           8: 'P301',
+                           9: 'P310',
+                           10: 'Kaiser-Bessel',
+                           11: 'Harris',
+                           12: 'Blackman',
+                           13: 'Resolution filter',
+                           14: 'Correlation Lead Lag',
+                           15: 'Correlation Lag',
+                           16: 'Gated',
+                           17: 'P400',
+                           }
     window_dict['window_type'] = window_type_decoder[
         window_dict['window_type']]
     correction_mode_decoder = {0: 'Correction not applied',
@@ -386,10 +402,19 @@ def _decode_sdf_meas_hdr(
         meas_hdr['sweep_freq']) = struct.unpack(
             b'>3d', binary_data[102:126])
     coded_meas_type, = struct.unpack('>h', binary_data[126:128])
-    # FIXME: Need to add the other measurement types
-    meas_type_decoder = {-99: 'Unknown measurement', 0: 'Spectrum measurement',
-                         1: 'Network measurement', 2: 'Swept measurement',
-                         3: 'FFT measurement'}
+    meas_type_decoder = {-99: 'Unknown measurement',
+                         0: 'Spectrum measurement',
+                         1: 'Network measurement',
+                         2: 'Swept measurement',
+                         3: 'FFT measurement',
+                         4: 'Orders measurement',
+                         5: 'Octave measurement',
+                         6: 'Capture measurement',
+                         7: 'Correlation measurement',
+                         8: 'Histogram measurement',
+                         9: 'Swept network measurement',
+                         10: 'FFT network measurement',
+                         }
     meas_hdr['meas_type'] = meas_type_decoder[coded_meas_type]
     coded_real_time, = struct.unpack('>h', binary_data[128:130])
     real_time_decoder = {0: 'Not continuous', 1: 'Continuous'}
@@ -437,13 +462,18 @@ def _decode_sdf_data_hdr(
     data_hdr['data_title'] = _strip_nonprintable(
         struct.unpack(b'>16s', binary_data[10:26])[0])
     coded_domain, = struct.unpack('>h', binary_data[26:28])
-    domain_decoder = {-99: 'Unknown', 0: 'Frequency domain',
-                      1: 'Time domain', 2: 'Amplitude domain',
-                      3: 'RPM', 4: 'Order', 5: 'Channel', 6: 'Octave'}
+    domain_decoder = {-99: 'Unknown',
+                      0: 'Frequency domain',
+                      1: 'Time domain',
+                      2: 'Amplitude domain',
+                      3: 'RPM',
+                      4: 'Order',
+                      5: 'Channel',
+                      6: 'Octave'}
     data_hdr['domain'] = domain_decoder[coded_domain]
     coded_data_type, = struct.unpack('>h', binary_data[28:30])
-    # FIXME: Add more data_type codes
-    data_type_decoder = {-99: 'Unknown', 0: 'Time',
+    data_type_decoder = {-99: 'Unknown',
+                         0: 'Time',
                          1: 'Linear spectrum',
                          2: 'Auto-power spectrum',
                          3: 'Cross-power spectrum',
@@ -452,6 +482,73 @@ def _decode_sdf_data_hdr(
                          6: 'Cross-correlation',
                          7: 'Impulse response',
                          8: 'Ordinary coherence',
+                         9: 'Partial coherence',
+                         10: 'Multiple coherence',
+                         11: 'Full octave',
+                         12: 'Third octave',
+                         13: 'Convolution',
+                         14: 'Histogram',
+                         15: 'Probability density function',
+                         16: 'Cumulative density function,',
+                         17: 'Power spectrum order tracking',
+                         18: 'Composite power tracking',
+                         19: 'Phase order tracking',
+                         20: 'RPM spectral',
+                         21: 'Order ratio',
+                         22: 'Orbit',
+                         23: 'HP 35650 series calibration',
+                         24: 'Sine rms pwr data',
+                         25: 'Sine variance data',
+                         26: 'Sine range data',
+                         27: 'Sine settle time data',
+                         28: 'Sine integ time data',
+                         29: 'Sine source data',
+                         30: 'Sine overload data',
+                         31: 'Sine linear data',
+                         32: 'Synthesis',
+                         33: 'Curve fit weighting function',
+                         34: 'Frequency corrections (for capture)',
+                         35: 'All pass time data',
+                         36: 'Norm reference data',
+                         37: 'tachometer data',
+                         38: 'limit line data',
+                         39: 'twelfth octave data',
+                         40: 'S11 data',
+                         41: 'S21 data',
+                         42: 'S12 data',
+                         43: 'S22 data',
+                         44: 'PSD data',
+                         45: 'decimated time data',
+                         46: 'overload data',
+                         47: 'compressed time data',
+                         48: 'external trigger data',
+                         49: 'pressure data',
+                         50: 'intensity data',
+                         51: 'PI index data',
+                         52: 'velocity data',
+                         53: 'PV index data',
+                         54: 'sound power data',
+                         55: 'field indicator data',
+                         56: 'partial power data',
+                         57: 'Ln 1 data',
+                         58: 'Ln 10 data',
+                         59: 'Ln 50 data',
+                         60: 'Ln 90 data',
+                         61: 'Ln 99 data',
+                         62: 'Ln user data',
+                         63: 'T20 data',
+                         64: 'T30 data',
+                         65: 'RT60 data',
+                         66: 'average count data',
+                         68: ' IQ measured time',
+                         69: ' IQ measured spectrum',
+                         70: ' IQ reference time',
+                         71: ' IQ reference spectrum',
+                         72: ' IQ error magnitude',
+                         73: ' IQ error phase',
+                         74: ' IQ error vector time',
+                         75: ' IQ error vector spectrum',
+                         76: ' symbol table data',
                          }
     data_hdr['data_type'] = data_type_decoder[coded_data_type]
     coded_x_resolution_type, = struct.unpack('>h', binary_data[42:44])
