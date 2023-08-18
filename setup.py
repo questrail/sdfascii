@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2022 The sdfascii developers. All rights reserved.
+# Copyright (c) 2022–2023 The sdfascii developers. All rights reserved.
 # Project site: https://github.com/questrail/sdfascii
 # Use of this source code is governed by a MIT-style license that
 # can be found in the LICENSE.txt file for the project.
@@ -55,11 +55,10 @@ setuptools.setup(
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
         'License :: OSI Approved :: MIT License',
         'Development Status :: 3 - Alpha',
         'Operating System :: OS Independent',
