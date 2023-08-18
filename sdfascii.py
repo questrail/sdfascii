@@ -27,7 +27,7 @@ from typing import Any, Dict, TypedDict, Union, cast
 import numpy as np
 # import numpy.typing as npt
 
-__version__ = '0.8.0'
+__version__ = '0.8.1'
 
 
 FILE_HDR_RECORD_TYPE = 10
@@ -971,7 +971,7 @@ def read_sdf_file(sdf_filename: str) -> tuple[Any, Any]:
             sdf_data = np.fromfile(
                 file=sdf_file,
                 dtype=dtype,
-                count=data_hdr['num_points'],
+                count=count,
                 sep='')
 
             # Apply the trace correction factor.
