@@ -3,6 +3,9 @@ This file contains all notable changes to the [sdfascii][] project.
 
 ## develop (unreleased)
 
+## v0.8.0 - 18-Aug-23
+- Fixed error in number of y-data points, when the values are complex.
+
 ## v0.7.0 - 18-Aug-23
 - Fixed error parsing complex data.
 - Added examples to tasks.

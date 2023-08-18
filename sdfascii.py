@@ -27,7 +27,7 @@ from typing import Any, Dict, TypedDict, Union, cast
 import numpy as np
 # import numpy.typing as npt
 
-__version__ = '0.7.0'
+__version__ = '0.8.0'
 
 
 FILE_HDR_RECORD_TYPE = 10
@@ -964,8 +964,10 @@ def read_sdf_file(sdf_filename: str) -> tuple[Any, Any]:
             # Right now we're only handling either single floats or single
             # complex values.
             dtype: Any = np.dtype('>f')
+            count = data_hdr['num_points']
             if data_hdr['y_is_complex']:
                 dtype = np.dtype('>c16')
+                count *= 2
             sdf_data = np.fromfile(
                 file=sdf_file,
                 dtype=dtype,
