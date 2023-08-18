@@ -7,10 +7,10 @@
 '''
 sdfascii.py
 
-Read SDF and ASCII files created by HP/Agilent Dynamic Signal Analyzers.
+Read Standard Data Format (SDF) and ASCII files created by HP/Agilent Dynamic
+Signal Analyzers.
 
-**WARNING:** Currently, only supporting SDF version 2 as produced by an
-Agilent 35670A DSA.
+**WARNING:** Currently, only supporting SDF version 2.
 '''
 
 # Future imports
@@ -26,7 +26,7 @@ from typing import Any, Dict, TypedDict, Union, cast
 import numpy as np
 # import numpy.typing as npt
 
-__version__ = '0.5.4'
+__version__ = '0.6.0'
 
 
 FILE_HDR_RECORD_TYPE = 10
@@ -148,8 +148,8 @@ class SDFDataHdrV3(SDFDataHdrBase):
 class SDFVectorHdr(TypedDict):
     record_size: int
     offset_unique_record: int
-    channel_record: int
-    channel_power_48x: int
+    channel_record: tuple[int]
+    channel_power_48x: tuple[int]
 
 
 class SDFChannelHdr(TypedDict):
@@ -881,10 +881,10 @@ def read_sdf_file(sdf_filename: str) -> tuple[Any, Any]:
                 sdf_hdr['file_hdr']['sdf_revision'],
                 sdf_file.read(scan_struct_record_size))
 
-        # -------------------------------------------------------------------- #
+        # ------------------------------------------------------------------- #
         # Decode the Y-axis data records
         # The y-data offset will be -1 if there is no y-data
-        # -------------------------------------------------------------------- #
+        # ------------------------------------------------------------------- #
         if sdf_hdr['file_hdr']['offset_ydata_record'] >= 0:
             # Move to the start of the y-axis data record
             sdf_file.seek(sdf_hdr['file_hdr']['offset_ydata_record'])
@@ -892,35 +892,100 @@ def read_sdf_file(sdf_filename: str) -> tuple[Any, Any]:
             yaxis_data_record_type, yaxis_data_record_size = struct.unpack(
                 record_type_size_format,
                 sdf_file.read(struct.calcsize(record_type_size_format)))
-            if yaxis_data_record_type == YDATA_HDR_RECORD_TYPE:
-                # This is a y-axis data record
-                sdf_data = np.fromfile(
-                    sdf_file, '>f',
-                    count=sdf_hdr['data_hdr'][0]['num_points'], sep='')
-                # TODO: Should probably leave in the native units unless
-                # the user requests something else, but I'm going to cheat
-                # and return just Vrms given this only works for the
-                # 35670A DSA currently.
-                # FIXME: I'm cheating! I know that my data is only on the
-                # first channel
-                # and that it uses the narrow_band_correction to convert from
-                # Vpk^2 (native units) to Vrms
-                channel_correction_factor = (
-                    (sdf_hdr['channel_hdr'][0]['window']['narrow_band_corr'] /
-                        sdf_hdr['channel_hdr'][0]['int_2_eng_unit']) **
-                    (sdf_hdr['vector_hdr'][0]['channel_power_48x'][0] / 48))
-                # Apply the correction factor and then convert from
-                # Vpk^2 to Vpk and then to Vrms
-                sdf_data = np.sqrt(
-                    channel_correction_factor * sdf_data) / np.sqrt(2)
-                # FIXME: I'm only returning the data over the start and stop
-                # frequency indices, which are 0 & 1600, respectively.
-                # The last_valid_index is 2048. Why the discrepancy?
-                start_idx = sdf_hdr['meas_hdr']['start_freq_index']
-                stop_idx = sdf_hdr['meas_hdr']['stop_freq_index']
-                sdf_data = sdf_data[start_idx:stop_idx+1]
-            else:
+            # Confirm we received a y-axis data record
+            if yaxis_data_record_type != YDATA_HDR_RECORD_TYPE:
                 sys.exit('This should have been a scan struct record.')
+
+            # FIXME: Need to handle more than just the first data_hdr
+            data_hdr = sdf_hdr['data_hdr'][0]
+            vector_id = data_hdr['first_vector_record_num']
+
+            # Create the combined trace correction factor.
+            vector_hdr = sdf_hdr['vector_hdr'][vector_id]
+            resp_ch_id = vector_hdr['channel_record'][0]
+            pwr_of_resp_ch = vector_hdr['channel_power_48x'][0]
+            exciter_ch_id = vector_hdr['channel_record'][1]
+            pwr_of_exciter_ch = vector_hdr['channel_power_48x'][1]
+
+            # Calculate the response channel combined correction factor.
+            if resp_ch_id == -1:
+                resp_ch_corr_factor = 1
+            else:
+                resp_ch = sdf_hdr['channel_hdr'][resp_ch_id]
+                # Calculate the engineering unit (EU) correction. EU correction
+                # allows you to convert y-axis data from the instrument’s
+                # internal unit to some user-defined unit (such as g — the
+                # acceleration of gravity). An EU correction factor is included
+                # in each Channel Header record; the factor’s field name is
+                # int2engrUnit.
+                resp_eu_corr = resp_ch['int_2_eng_unit']
+
+                # Calculate the window correction, which is necessary only for
+                # FREQ or ORDER domain data.
+                if data_hdr['domain'] == 'Frequency domain' or \
+                        data_hdr['domain'] == 'Channel':
+                    resp_window_corr = \
+                        resp_ch['window']['narrow_band_corr']
+                else:
+                    resp_window_corr = 1.0
+
+                # Calculate te combined correction factor for the response
+                # channel.
+                resp_ch_corr_factor = (
+                    (resp_window_corr / resp_eu_corr) ** (pwr_of_resp_ch / 48))
+
+            # Calculate the exciter channel combined correction factor.
+            if exciter_ch_id == -1:
+                exciter_ch_corr_factor = 1
+            else:
+                exciter_ch = sdf_hdr['channel_hdr'][exciter_ch_id]
+                exciter_eu_corr = exciter_ch['int_2_eng_unit']
+
+                # Calculate the window correction, which is necessary only for
+                # FREQ or ORDER domain data.
+                if data_hdr['domain'] == 'Frequency domain' or \
+                        data_hdr['domain'] == 'Channel':
+                    exciter_window_corr = \
+                        exciter_ch['window']['narrow_band_corr']
+                else:
+                    exciter_window_corr = 1.0
+
+                # Calculate te combined correction factor for the exciter
+                # channel.
+                exciter_ch_corr_factor = (
+                    (exciter_window_corr / exciter_eu_corr) **
+                    (pwr_of_exciter_ch / 48))
+
+            trace_corr_factor = resp_ch_corr_factor * exciter_ch_corr_factor
+
+            # Read the y-axis data record
+            # FIXME: Need to handle cases where the y-data has muliple points.
+            # Right now we're only handling either single floats or single
+            # complex values.
+            dtype = '>f'
+            if data_hdr['y_is_complex']:
+                dtype = '>c'
+            sdf_data = np.fromfile(
+                file=sdf_file,
+                dtype=dtype,
+                count=data_hdr['num_points'],
+                sep='')
+
+            # Apply the trace correction factor.
+            sdf_data = trace_corr_factor * sdf_data
+
+            # FIXME: I'm cheating if this is a 35670A measurement and
+            # converting from the Vpk^2 (native units) to Vrms. Convert from
+            # Vpk^2 to Vpk and then to Vrms
+            if sdf_hdr['file_hdr']['application'] == 'HP 35670A':
+                sdf_data = np.sqrt(sdf_data) / np.sqrt(2)
+
+            # FIXME: I'm only returning the data over the start and stop
+            # frequency indices, which are 0 & 1600, respectively. The
+            # last_valid_index is 2048. Why the discrepancy?
+            start_idx = sdf_hdr['meas_hdr']['start_freq_index']
+            stop_idx = sdf_hdr['meas_hdr']['stop_freq_index']
+            sdf_data = sdf_data[start_idx:stop_idx+1]
 
     return sdf_hdr, sdf_data
 
