@@ -3,6 +3,13 @@ This file contains all notable changes to the [sdfascii][] project.
 
 ## develop (unreleased)
 
+## v0.6.0 - 18-Aug-23
+- Added mypy and removeed six and pandoc.
+- Removed Python 3.4, 3.5, 3.6, and 3.7
+- Added Python 3.10 and 3.11
+- Add missing window types, measurement types, and data types.
+- Fix trace correction factor.
+
 ## v0.5.4 - 25-Jun-22
 - Installed twine in order to upload to pypi.
 
