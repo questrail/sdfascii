@@ -964,7 +964,7 @@ def read_sdf_file(sdf_filename: str) -> tuple[Any, Any]:
             # complex values.
             dtype = '>f'
             if data_hdr['y_is_complex']:
-                dtype = '>c'
+                dtype = np.dtype('>c16')
             sdf_data = np.fromfile(
                 file=sdf_file,
                 dtype=dtype,
