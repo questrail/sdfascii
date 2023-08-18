@@ -5,7 +5,7 @@
 [![Coverage Status][coveralls image]][coveralls link]
 [![License Badge][license image]][LICENSE.txt]
 
-[sdfascii][] is a Python (3.6+) module for reading the HP/Agilent
+[sdfascii][] is a Python (3.8+) module for reading the HP/Agilent
 Standard Data Format (SDF) binary files and the ASCII files saved by
 HP/Agilent Dynamic Signal Analyzers (DSA).
 

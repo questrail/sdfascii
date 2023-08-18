@@ -30,6 +30,18 @@ def test(ctx):
     run("nose2")
 
 
+@task
+def example1(ctx):
+    """Parse HP35670A.DAT to JSON in examples folder"""
+    run('python sdfascii.py sdf examples/HP35670A.DAT examples/hp35670a.json')
+
+
+@task
+def example2(ctx):
+    """Parse HP35665A.DAT to JSON in examples folder"""
+    run('python sdfascii.py sdf examples/HP35665A.DAT examples/hp35665A.json')
+
+
 @task()
 def release(ctx, deploy=False, test=False, version=''):
     """Tag release, run Travis-CI, and deploy to PyPI

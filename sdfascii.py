@@ -18,6 +18,7 @@ from __future__ import annotations
 
 # Standard module imports
 from datetime import datetime
+import json
 import struct
 import sys
 from typing import Any, Dict, TypedDict, Union, cast
@@ -993,11 +994,15 @@ def read_sdf_file(sdf_filename: str) -> tuple[Any, Any]:
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('inputfile', action='store',
-                        help='Input filename excluding extension')
     parser.add_argument('filetype', action='store',
                         help='Input filetype should be sdf or ascii')
+    parser.add_argument('inputfile', action='store',
+                        help='Input filename excluding extension')
+    parser.add_argument('outputfile', action='store',
+                        help='Output json filename')
     args = parser.parse_args()
 
     if args.filetype == 'sdf':
         sdf_hdr, sdf_data = read_sdf_file(args.inputfile)
+        with open(args.outputfile, "w") as outfile:
+            json.dump(sdf_hdr, outfile, indent=2, default=str)
