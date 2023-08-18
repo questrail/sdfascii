@@ -6,6 +6,6 @@ nose2==0.13.0
 numpy==1.25.2
 pep8==1.7.1
 pep8-naming==0.13.0
-pip-chill==1.0.1
-twine==4.0.1
+pip-chill==1.0.3
+twine==4.0.2
 unipath==1.1

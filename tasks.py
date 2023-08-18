@@ -56,3 +56,4 @@ def release(ctx, deploy=False, test=False, version=''):
         print("- Checkout master")
         print("- Tag the git release with provided vX.YY.ZZ version")
         print("- Push the master branch and tags to repo")
+        print("**NOTE:** Use __token__ for pypi username/pwd")

@@ -26,7 +26,7 @@ from typing import Any, Dict, TypedDict, Union, cast
 import numpy as np
 # import numpy.typing as npt
 
-__version__ = '0.6.0'
+__version__ = '0.6.1'
 
 
 FILE_HDR_RECORD_TYPE = 10

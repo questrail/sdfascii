@@ -3,6 +3,9 @@ This file contains all notable changes to the [sdfascii][] project.
 
 ## develop (unreleased)
 
+## v0.6.1 - 18-Aug-23
+- Fixed upload to PyPi issue.
+
 ## v0.6.0 - 18-Aug-23
 - Added mypy and removeed six and pandoc.
 - Removed Python 3.4, 3.5, 3.6, and 3.7
