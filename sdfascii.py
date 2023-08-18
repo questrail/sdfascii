@@ -963,7 +963,7 @@ def read_sdf_file(sdf_filename: str) -> tuple[Any, Any]:
             # FIXME: Need to handle cases where the y-data has muliple points.
             # Right now we're only handling either single floats or single
             # complex values.
-            dtype = '>f'
+            dtype: Any = np.dtype('>f')
             if data_hdr['y_is_complex']:
                 dtype = np.dtype('>c16')
             sdf_data = np.fromfile(
