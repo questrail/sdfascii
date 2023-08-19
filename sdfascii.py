@@ -27,7 +27,7 @@ from typing import Any, Dict, TypedDict, Union, cast
 import numpy as np
 # import numpy.typing as npt
 
-__version__ = '0.8.1'
+__version__ = '0.8.2'
 
 
 FILE_HDR_RECORD_TYPE = 10
@@ -745,6 +745,9 @@ def read_sdf_file(sdf_filename: str) -> tuple[Any, Any]:
 
         # Determine record type (short) and record size (long)
         # Every record has these two special fields at the start
+        # > = big-endian
+        # h = short integer (2 bytes)
+        # l = long integer (4 bytes)
         record_type_size_format = '>hl'
 
         # Process the file header record
@@ -966,7 +969,7 @@ def read_sdf_file(sdf_filename: str) -> tuple[Any, Any]:
             dtype: Any = np.dtype('>f')
             count = data_hdr['num_points']
             if data_hdr['y_is_complex']:
-                dtype = np.dtype('>c16')
+                dtype = np.dtype('>c8')
                 count *= 2
             sdf_data = np.fromfile(
                 file=sdf_file,

@@ -3,6 +3,12 @@ This file contains all notable changes to the [sdfascii][] project.
 
 ## develop (unreleased)
 
+## v0.8.2 - 18-Aug-23
+- Fixed the data type for y-data complex values (use >c8 not >c16).
+
+## v0.8.1 - 18-Aug-23
+- Fixed the fix for y-data number of points with complex values.
+
 ## v0.8.0 - 18-Aug-23
 - Fixed error in number of y-data points, when the values are complex.
 
