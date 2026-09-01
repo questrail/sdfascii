@@ -1,0 +1,117 @@
+# pyproject.toml
+
+[project]
+name = "sdfascii"
+version = "0.8.2"
+description = "Read HP/Agilent SDF binary and DSA ASCII files"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE.txt"]
+authors = [
+  { name = "Matthew Rankin", email = "369937+matthewrankin@users.noreply.github.com" },
+]
+requires-python = ">=3.12"
+dependencies = ["numpy>=2.2.0"]
+classifiers = [
+  'Programming Language :: Python',
+  'Programming Language :: Python :: 3',
+  'Programming Language :: Python :: 3.12',
+  'Programming Language :: Python :: 3.13',
+  'Programming Language :: Python :: 3.14',
+  # Still Alpha, as it was under setup.py. The module reads SDF revision 2
+  # only, and the y-data reader carries known limitations; see the FIXMEs in
+  # src/sdfascii/__init__.py.
+  'Development Status :: 3 - Alpha',
+  'Operating System :: OS Independent',
+  'Intended Audience :: Developers',
+  'Topic :: Software Development :: Libraries :: Python Modules',
+]
+
+[project.urls]
+Homepage = "https://github.com/questrail/sdfascii"
+Issues = "https://github.com/questrail/sdfascii/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sdfascii"]
+
+[tool.hatch.build.targets.sdist]
+# Name what ships rather than taking hatchling's default of everything the
+# .gitignore does not exclude, which would sweep in any scratch data sitting
+# untracked in the working directory.
+include = [
+  "src",
+  "tests",
+  "examples",
+  "CHANGELOG.md",
+  "LICENSE.txt",
+  "README.md",
+  "pyproject.toml",
+]
+# PIC3KHZ.JPG is a 2.7 MB photograph of the bench that produced the test
+# recording. It is worth keeping in the repository next to the INFO.md that
+# describes the setup, and it is 99% of what the sdist would otherwise weigh;
+# nothing in the suite reads it.
+exclude = ["tests/**/*.JPG"]
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+# Select rules explicitly rather than relying on ruff's defaults, so that the
+# rule set is a deliberate choice. The ruff version itself is pinned by uv.lock.
+select = [
+  "E",   # pycodestyle errors
+  "W",   # pycodestyle warnings
+  "F",   # pyflakes
+  "I",   # isort
+  "UP",  # pyupgrade
+  "B",   # flake8-bugbear
+  "SIM", # flake8-simplify
+  "EXE", # flake8-executable
+  "PL",  # pylint
+  "PT",  # flake8-pytest-style
+  "RUF", # ruff's own rules
+]
+
+[tool.ruff.lint.per-file-ignores]
+# The suite is written against unittest.TestCase, so PT009 objects to every
+# assertion in it. Converting it to plain pytest asserts is worth doing and is
+# its own job, not a side effect of choosing a rule set.
+"tests/**" = ["PT009", "PT027"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["--strict-markers", "--strict-config"]
+
+[tool.coverage.run]
+source = ["sdfascii"]
+branch = true
+# Coveralls maps the report onto the repository, and absolute paths from a
+# runner's checkout directory are not something it can map.
+relative_files = true
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = ["pragma: no cover", "if TYPE_CHECKING:"]
+# A floor rather than a target: set at what the suite covers today, so that
+# uncovered code has to arrive with either a test or a deliberate edit to this
+# line.
+fail_under = 88
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+include = ["src", "tests", "scripts"]
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.411",
+    "pytest>=9.0.3",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.16.5",
+    "zizmor>=1.30.0",
+]
