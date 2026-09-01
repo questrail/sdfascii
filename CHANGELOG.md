@@ -4,6 +4,8 @@ This file contains all notable changes to the [sdfascii][] project.
 
 ## Unreleased
 
+## v0.9.0 - 2026-09-01
+
 ### Added
 
 - Continuous integration on GitHub Actions, replacing a `.travis.yml` that
