@@ -666,8 +666,13 @@ def _decode_sdf_data_hdr(  # noqa: PLR0915
     return temp_data_hdr
 
 
+# The five revision-aware decoders share one signature so the reader calls
+# them the same way. Three of them describe records whose layout does not
+# differ between revisions, so sdf_revision goes unread there.
 def _decode_sdf_vector_hdr(
-    record_size: int, sdf_revision: int, binary_data: bytes
+    record_size: int,
+    sdf_revision: int,  # noqa: ARG001
+    binary_data: bytes,
 ) -> SDFVectorHdr:
     """
     Decode the vector header binary data
@@ -682,7 +687,9 @@ def _decode_sdf_vector_hdr(
 
 
 def _decode_sdf_channel_hdr(
-    record_size: int, sdf_revision: int, binary_data: bytes
+    record_size: int,
+    sdf_revision: int,  # noqa: ARG001
+    binary_data: bytes,
 ) -> SDFChannelHdr:
     """Decode the channel header binary data to a dictionary."""
     channel_hdr: dict = {}
@@ -769,7 +776,9 @@ def _decode_sdf_channel_hdr(
 
 
 def _decode_sdf_scan_struct(
-    record_size: int, sdf_revision: int, binary_data: bytes
+    record_size: int,
+    sdf_revision: int,  # noqa: ARG001
+    binary_data: bytes,
 ) -> SDFScanStruct:
     """Decode the scan structure binary data to a dictionary."""
     scan_struct: dict = {}
