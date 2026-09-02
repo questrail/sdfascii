@@ -475,3 +475,52 @@ class TestCommandLineInterface(unittest.TestCase):
         with self.assertRaises(SystemExit) as raised:
             main(["ascii", self.sdf_file, "unused.json"])
         self.assertEqual(raised.exception.code, 2)
+
+
+class TestRefusingAFileItCannotRead(unittest.TestCase):
+    """A file that is not SDF is reported, not acted on.
+
+    These reads called sys.exit, so a library consumer handed a bad file lost
+    its process rather than an exception it could catch.
+    """
+
+    def _write(self, tmpdir, contents):
+        path = os.path.join(tmpdir, "not-sdf.DAT")
+        with open(path, "wb") as bad_file:
+            bad_file.write(contents)
+        return path
+
+    def test_raises_on_a_bad_file_identifier(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = self._write(tmpdir, b"XX" + b"\x00" * 64)
+            with self.assertRaises(sdfascii.SdfError) as raised:
+                sdfascii.read_sdf_file(path)
+        self.assertIn("Invalid file identifier", str(raised.exception))
+
+    def test_the_error_is_a_value_error(self):
+        """Anyone already catching ValueError around a read keeps working."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = self._write(tmpdir, b"XX" + b"\x00" * 64)
+            with self.assertRaises(ValueError):
+                sdfascii.read_sdf_file(path)
+
+    def test_the_caller_keeps_running(self):
+        """The whole point of the change: catching it is enough to carry on."""
+        carried_on = False
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = self._write(tmpdir, b"XX" + b"\x00" * 64)
+            try:
+                sdfascii.read_sdf_file(path)
+            except sdfascii.SdfError:
+                carried_on = True
+        self.assertTrue(carried_on)
+
+    def test_the_cli_reports_it_without_a_traceback(self):
+        """At a command line the message is the useful part."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = self._write(tmpdir, b"XX" + b"\x00" * 64)
+            output = os.path.join(tmpdir, "out.json")
+            with self.assertRaises(SystemExit) as raised:
+                main(["sdf", path, output])
+            self.assertIn("Invalid file identifier", str(raised.exception.code))
+            self.assertFalse(os.path.exists(output))

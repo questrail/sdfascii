@@ -14,7 +14,7 @@ that it is a package, nothing would ever have reached it.
 import argparse
 import json
 
-from . import read_sdf_file
+from . import SdfError, read_sdf_file
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -29,7 +29,14 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("outputfile", help="the JSON file to write the header to")
     args = parser.parse_args(argv)
 
-    sdf_hdr, _sdf_data = read_sdf_file(args.inputfile)
+    # read_sdf_file raises on a file it cannot read, where it used to end the
+    # process itself. At a command line the message is the useful part and a
+    # traceback is noise, so turn it back into an exit here, which is the one
+    # layer entitled to make that call.
+    try:
+        sdf_hdr, _sdf_data = read_sdf_file(args.inputfile)
+    except SdfError as exc:
+        raise SystemExit(f"sdfascii: {exc}") from exc
     with open(args.outputfile, "w") as outfile:
         json.dump(sdf_hdr, outfile, indent=2, default=str)
 

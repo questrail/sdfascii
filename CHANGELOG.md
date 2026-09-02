@@ -13,6 +13,14 @@ This file contains all notable changes to the [sdfascii][] project.
 
 ### Changed
 
+- `read_sdf_file` raises `SdfError` on a file it cannot read, at the twelve
+  places that called `sys.exit`. A library has no business ending the caller's
+  process over a bad file: an application reading a directory of captures lost
+  the run on the first stray one, with no way to catch it and skip. `SdfError`
+  subclasses `ValueError` and is exported from the package. The command line
+  is unchanged, which is the point of the split: `python -m sdfascii` catches
+  it and still exits non-zero with the message and no traceback.
+
 - `just build` and `just release` depend on `cov` rather than `test`. CI runs
   pytest under coverage and fails below the `fail_under` floor in
   `pyproject.toml`, so the bare suite these recipes ran left that gate as one

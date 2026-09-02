@@ -11,13 +11,20 @@ Dynamic Signal Analyzers.
 from __future__ import annotations
 
 import struct
-import sys
 from datetime import datetime
 from typing import Any, TypedDict, cast
 
 import numpy as np
 
-__all__ = ["read_ascii_files", "read_sdf_file"]
+__all__ = ["SdfError", "read_ascii_files", "read_sdf_file"]
+
+
+class SdfError(ValueError):
+    """The file does not hold the SDF structure this module knows how to read.
+
+    Subclasses ValueError because that is what an unreadable file is: the
+    argument was not what the function can work with.
+    """
 
 
 FILE_HDR_RECORD_TYPE = 10
@@ -402,7 +409,7 @@ def _decode_sdf_file_hdr(
         temp_file_hdr = cast(SDFFileHdrV3, file_hdr)
     else:
         # SDF revision not recognized
-        sys.exit("Did not recognize SDF revision in file header.")
+        raise SdfError("Did not recognize SDF revision in file header.")
 
     return temp_file_hdr
 
@@ -417,7 +424,7 @@ def _decode_sdf_meas_hdr(
     # FIXME(mdr): Check that the record_type is 11 (short int 0:2).
     record_size_from_binary_data = struct.unpack(">l", binary_data[2:6])[0]
     if record_size != record_size_from_binary_data:
-        sys.exit("Bad record size in SDF_MEAS_HDR")
+        raise SdfError("Bad record size in SDF_MEAS_HDR")
     meas_hdr["record_size"] = record_size
     (meas_hdr["offset_unique_record"],) = struct.unpack(b">1l", binary_data[6:10])
     (meas_hdr["block_size"],) = struct.unpack(">l", binary_data[18:22])
@@ -487,7 +494,7 @@ def _decode_sdf_meas_hdr(
         temp_meas_hdr = cast(SDFMeasHdrV3, meas_hdr)
     else:
         # SDF revision not recognized
-        sys.exit("Did not recognize SDF revision passed to meas hdr.")
+        raise SdfError("Did not recognize SDF revision passed to meas hdr.")
 
     return temp_meas_hdr
 
@@ -661,7 +668,7 @@ def _decode_sdf_data_hdr(  # noqa: PLR0915
         temp_data_hdr = cast(SDFDataHdrV3, data_hdr)
     else:
         # SDF revision not recognized
-        sys.exit("Did not recognize SDF revision")
+        raise SdfError("Did not recognize SDF revision")
 
     return temp_data_hdr
 
@@ -828,7 +835,7 @@ def read_sdf_file(sdf_filename: str) -> tuple[Any, Any]:  # noqa: PLR0912, PLR09
         file_identifier = sdf_file.read(2)
         if file_identifier != b"B\x00":
             # Didn't find a valid file identifer, so bail out
-            sys.exit(f"Invalid file identifier: {file_identifier!r}")
+            raise SdfError(f"Invalid file identifier: {file_identifier!r}")
         sdf_hdr["valid_file_identifier"] = True
 
         # Determine record type (short) and record size (long)
@@ -845,7 +852,7 @@ def read_sdf_file(sdf_filename: str) -> tuple[Any, Any]:  # noqa: PLR0912, PLR09
         )
         # Confirm this is a file header record.
         if file_hdr_record_type != FILE_HDR_RECORD_TYPE:
-            sys.exit("Error processing SDF file; expected file header")
+            raise SdfError("Error processing SDF file; expected file header")
         # Found the file header record
         # Process the entire file header record including the record type
         # (short) and record size (long)
@@ -861,7 +868,7 @@ def read_sdf_file(sdf_filename: str) -> tuple[Any, Any]:  # noqa: PLR0912, PLR09
         )
         # Confirm this is a measurement header record.
         if meas_hdr_record_type != MEAS_HDR_RECORD_TYPE:
-            sys.exit("Error processing SDF file; expected measurement header")
+            raise SdfError("Error processing SDF file; expected measurement header")
         # Found the measurement header record
         sdf_file.seek(sdf_file.tell() - struct.calcsize(record_type_size_format))
         sdf_hdr["meas_hdr"] = _decode_sdf_meas_hdr(
@@ -887,7 +894,7 @@ def read_sdf_file(sdf_filename: str) -> tuple[Any, Any]:  # noqa: PLR0912, PLR09
             )
             # Confirm this is a data header record.
             if data_hdr_record_type != DATA_HDR_RECORD_TYPE:
-                sys.exit("This should have been a data header record.")
+                raise SdfError("This should have been a data header record.")
             # This is a data header record
             sdf_file.seek(sdf_file.tell() - struct.calcsize(record_type_size_format))
             sdf_hdr["data_hdr"].append(
@@ -918,7 +925,7 @@ def read_sdf_file(sdf_filename: str) -> tuple[Any, Any]:  # noqa: PLR0912, PLR09
             )
             # Confirm this is a vector header record.
             if vector_hdr_record_type != VECTOR_HDR_RECORD_TYPE:
-                sys.exit("This should have been a vector header record.")
+                raise SdfError("This should have been a vector header record.")
             # This is a vector header record
             # Backup and read all of the vector header record including
             # the record type and record size
@@ -950,7 +957,7 @@ def read_sdf_file(sdf_filename: str) -> tuple[Any, Any]:  # noqa: PLR0912, PLR09
             )
             # Confirm this is a channel header record.
             if channel_hdr_record_type != CHANNEL_HDR_RECORD_TYPE:
-                sys.exit("This should have been a channel header record.")
+                raise SdfError("This should have been a channel header record.")
             # This is a channel header record
             # Backup and read all of the channel header record including
             # the record type and record size
@@ -981,7 +988,7 @@ def read_sdf_file(sdf_filename: str) -> tuple[Any, Any]:  # noqa: PLR0912, PLR09
             )
             # Confirm this is a channel header record.
             if scan_struct_record_type != SCAN_STRUCT_RECORD_TYPE:
-                sys.exit("This should have been a scan struct record.")
+                raise SdfError("This should have been a scan struct record.")
             # This is a channel header record
             # Backup and read all of the channel header record including
             # the record type and record size
@@ -1011,7 +1018,7 @@ def read_sdf_file(sdf_filename: str) -> tuple[Any, Any]:  # noqa: PLR0912, PLR09
             )
             # Confirm we received a y-axis data record
             if yaxis_data_record_type != YDATA_HDR_RECORD_TYPE:
-                sys.exit("This should have been a scan struct record.")
+                raise SdfError("This should have been a scan struct record.")
 
             # FIXME: Need to handle more than just the first data_hdr
             data_hdr = sdf_hdr["data_hdr"][0]
