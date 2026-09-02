@@ -29,14 +29,6 @@ def main(expected: str) -> None:
     if installed != expected:
         raise SystemExit(f"The wheel installed {installed}, expected {expected}")
 
-    # __version__ is read back from the installed metadata rather than written
-    # in the source, so a wheel that failed to record it would report the
-    # wrong thing here rather than in a bug report.
-    if sdfascii.__version__ != expected:
-        raise SystemExit(
-            f"sdfascii.__version__ is {sdfascii.__version__}, expected {expected}"
-        )
-
     for name in sdfascii.__all__:
         if not callable(getattr(sdfascii, name)):
             raise SystemExit(f"{name} is missing from the wheel")

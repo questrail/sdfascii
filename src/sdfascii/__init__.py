@@ -13,15 +13,9 @@ from __future__ import annotations
 import struct
 import sys
 from datetime import datetime
-from importlib.metadata import version
 from typing import Any, TypedDict, cast
 
 import numpy as np
-
-# Read back from the installed distribution metadata rather than written here,
-# so that pyproject.toml is the single place the version lives and `uv version`
-# can read and bump it.
-__version__ = version("sdfascii")
 
 __all__ = ["read_ascii_files", "read_sdf_file"]
 

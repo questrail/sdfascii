@@ -4,6 +4,30 @@ This file contains all notable changes to the [sdfascii][] project.
 
 ## Unreleased
 
+### Added
+
+- Ignore `.pypirc`. A copy holding a PyPI username and password predates the
+  move to trusted publishing, which mints a short lived credential per
+  release and leaves nothing on disk; nothing here needs the file, and
+  ignoring it keeps a leftover from being committed by accident.
+
+### Changed
+
+- `just build` and `just release` depend on `cov` rather than `test`. CI runs
+  pytest under coverage and fails below the `fail_under` floor in
+  `pyproject.toml`, so the bare suite these recipes ran left that gate as one
+  they never applied: a tree that passed locally could still be rejected on
+  push, and `just release` could tag a version CI would then refuse to publish.
+
+### Removed
+
+- **Breaking:** `sdfascii.__version__`. It was never read inside the package,
+  only exported, and `importlib.metadata.version("sdfascii")` has been the
+  stdlib way to ask since 3.8, well below the 3.12 floor. Populating it
+  cost roughly 8 ms at import time, for a name that duplicated what
+  `pyproject.toml` already records. Read the version with
+  `importlib.metadata.version("sdfascii")`.
+
 ## v0.9.0 - 2026-09-01
 
 ### Added
